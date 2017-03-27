@@ -70,7 +70,7 @@ cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
     cv::cuda::addWeighted(channelsLab[0], 1, smoothed, -1, 150, channelsLab[0]);
     cv::cuda::merge(channelsLab, labFrame);
     labFrame.download(m_smoothedFrame);
-    cv::cuda::threshold(channelsLab[0], channelsLab[0], 125, 255, cv::THRESH_BINARY_INV);
+    cv::cuda::threshold(channelsLab[0], channelsLab[0], m_threshold, 255, cv::THRESH_BINARY_INV);
     cv::cuda::merge(channelsLab, labFrame);
     labFrame.download(m_binaryFrame);
     cv::SimpleBlobDetector::Params params;
@@ -166,4 +166,14 @@ cv::Mat BeeTracker2d::roiMask(cv::Mat input, int threshold)
     cv::bitwise_not(mask, not_mask);
     input.setTo(140*cv::Scalar(1, 1, 1), not_mask);
     return input;
+}
+
+int BeeTracker2d::getThreshold() const
+{
+    return m_threshold;
+}
+
+void BeeTracker2d::setThreshold(int threshold)
+{
+    m_threshold = threshold;
 }

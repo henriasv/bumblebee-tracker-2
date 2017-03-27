@@ -18,6 +18,9 @@ public:
     void load(std::string filename, bool flipFlag);
     cv::Mat getFrame(int frameIndex, std::string mode);
 
+    int getThreshold() const;
+    void setThreshold(int threshold);
+
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
@@ -36,6 +39,7 @@ private:
     cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
 
     bool m_flipFlag;
+    int m_threshold = 125;
 
 };
 

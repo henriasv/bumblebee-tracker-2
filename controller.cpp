@@ -1,5 +1,13 @@
 #include "controller.h"
 #include <QDebug>
+void Controller::update()
+{
+    camA.setThreshold(m_threshold);
+    camB.setThreshold(m_threshold);
+    qDebug() << "in update";
+    qDebug() << "threshold: " << m_threshold;
+}
+
 Controller::Controller(QObject *parent) : QObject(parent)
 {
     m_frameMax = 1;

@@ -1,6 +1,6 @@
 import QtQuick 2.7
-import QtQuick.Controls 1.1
-import QtQuick.Layouts 1.1
+import QtQuick.Controls 2.1
+import QtQuick.Layouts 1.3
 import TrackingController 1.0
 
 ApplicationWindow {
@@ -12,11 +12,12 @@ ApplicationWindow {
     title: qsTr("Bumblebee")
 
     function frameUpdate() {
-        camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageMode.current.text;
-        camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageMode.current.text
+        controller.update();
+        camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text;
+        camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
     }
 
-    toolBar : ToolBar {
+    header : ToolBar {
         id : mainToolBar
         RowLayout {
             anchors.fill: parent
@@ -24,20 +25,19 @@ ApplicationWindow {
                 text: "Load File"
                 onClicked: root.color = "khaki"
             }
-            Button {
+            ToolButton {
                 text: "Save trajectories"
-                onClicked: gui.setSource("file:/users/henriksveinsson/Dropbox/diverse/henrik.jpg")
             }
 
             Slider {
                 id : timeStepSlider
                 Layout.fillWidth: true
                 implicitWidth: 150
+                from : 1
+                to : 10000
                 stepSize: 1
-                minimumValue: 1
-                maximumValue: 10000
+                snapMode: "SnapAlways"
                 onValueChanged: frameLabel.text=this.value, frameUpdate()
-                updateValueWhileDragging: false
             }
             Label {
                 id : frameLabel
@@ -52,64 +52,95 @@ ApplicationWindow {
     {
         spacing : 10
         anchors.fill : parent
-        Rectangle {
-            anchors.top: parent.top
-            id: modeMenuContainer
-            width: 150
 
-            ColumnLayout {
-                spacing : 10
+        //Rectangle {
+        //    anchors.top: parent.top
+        //    id: modeMenuContainer
+        //    width: 150
 
-                ExclusiveGroup {
-                    id : imageMode
-                    onCurrentChanged: frameUpdate()
-                }
+            ButtonGroup {
+                id : imageTypeGroup
+            }
+            Column{
+                id : imageType
+
                 RadioButton {
                     id : rawButton
                     text : "Raw"
                     checked : true
-                    exclusiveGroup : imageMode
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
                 }
                 RadioButton {
                     text : "Lab"
                     checked : false
-                    exclusiveGroup : imageMode
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
                 }
                 RadioButton {
                     text : "Smoothed"
                     checked : false
-                    exclusiveGroup : imageMode
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
                 }
                 RadioButton {
                     text : "Binary"
                     checked : false
-                    exclusiveGroup : imageMode
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
                 }
                 RadioButton {
                     text : "Raw + Identifiers"
                     checked : false
-                    exclusiveGroup : imageMode
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
                 }
 
+
+                TextField {
+                    id : thresholdField
+                    text : "120"
+                    onEditingFinished: controller.threshold = parseInt(text), frameUpdate();
+                }
+
+                RangeSlider {
+                    from: 1
+                    to: 100
+                    first.value: 25
+                    second.value: 75
+                }
+
+                Button {
+                    id : updateButton
+                    text : "Update"
+                    onClicked : frameUpdate()
+                }
             }
-        }
+
+           // }
 
 
 
+
+
+        /*
         Rectangle{
             color : "gray"
             Layout.alignment: Qt.AlignCenter
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
+            //Layout.fillWidth: true
+            //Layout.fillHeight: true
+            anchors.fill : parent
+        */
             Column {
-                anchors.fill: parent
+                //anchors.fill: parent
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 spacing : 10
 
                 Rectangle{
                     width : parent.width
                     height : parent.height/2
-                    color : parent.parent.color
+                    //color : parent.parent.color
                     id : camArec
 
                     Image {
@@ -123,7 +154,9 @@ ApplicationWindow {
 
                 Rectangle{
                     id : camBrec
-                    color : parent.parent.color
+                    //color : parent.parent.color
+                    //Layout.fillWidth:true
+                    //Layout.fillHeight: true
                     width : parent.width
                     height : parent.height/2
 
@@ -138,4 +171,4 @@ ApplicationWindow {
             }
         }
     }
-}
+
