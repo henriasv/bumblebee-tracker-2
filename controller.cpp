@@ -16,6 +16,7 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_imageProvider->setController(this);
     camA.load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GP050029.MP4", false);
     camB.load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GP050050.MP4", true);
+    setFrameMax(camB.getMaxFrame());
 }
 
 QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mode)

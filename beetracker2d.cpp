@@ -14,6 +14,7 @@ void BeeTracker2d::load(std::string filename, bool flipFlag)
 {
     m_flipFlag = flipFlag;
     m_cam.open(filename);
+    setMaxFrame(m_cam.get(CV_CAP_PROP_FRAME_COUNT)-2);
 }
 
 cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
@@ -25,13 +26,13 @@ cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
         cv::flip(m_cpuFrame, m_cpuFrame, -1);
     }
     m_cpuFrame.copyTo(m_rawFrame);
+    m_cpuFrame.copyTo(m_identifierFrame);
     m_cpuFrame = roiMask(m_cpuFrame, 140);
     m_frameUnprocessed.upload(m_cpuFrame);
 
     cv::cuda::cvtColor(m_frameUnprocessed, m_frameUnprocessed, CV_BGR2Lab);
 
-    m_frameColorfiltered = colorFilter(m_frameUnprocessed);
-    m_frameProcessed = processFrame(m_frameColorfiltered);
+    m_frameProcessed = processFrame(m_frameUnprocessed);
     //cv::Mat frame2;
     m_frameProcessed = m_frameUnprocessed;
     cv::cuda::cvtColor(m_frameProcessed, m_frameProcessed, CV_Lab2RGB);
@@ -48,9 +49,17 @@ cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
     {
         cv::cvtColor(m_binaryFrame, retFrame, CV_Lab2RGB);
     }
+    else if (mode == "ColorFiltered")
+    {
+        cv::cvtColor(m_colorFilteredFrame, retFrame, CV_Lab2RGB);
+    }
     else if (mode == "Smoothed")
     {
         cv::cvtColor(m_smoothedFrame, retFrame, CV_Lab2RGB);
+    }
+    else if (mode == "Raw + Identifiers")
+    {
+        cv::cvtColor(m_identifierFrame, retFrame, CV_BGR2RGB);
     }
     else
     {
@@ -62,6 +71,8 @@ cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
 
 cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
 {
+    labFrame = colorFilter(labFrame);
+    labFrame.download(m_colorFilteredFrame);
     std::vector<cv::cuda::GpuMat> channelsLab(3);
     cv::cuda::split(labFrame, channelsLab);
     cv::cuda::GpuMat smoothed;
@@ -95,7 +106,7 @@ cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
     for (auto blob : keypoints)
     {
         //cv::floodFill(m_frameFinal, blob.pt, 0);
-        cv::circle(m_cpuFrame, blob.pt, 5, cv::Scalar(0, 255, 0), -1);
+        cv::circle(m_identifierFrame, blob.pt, 5, cv::Scalar(0, 255, 0), -1);
     }
 
     return labFrame;
@@ -123,7 +134,7 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
     cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
     cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
 
-    cv::cuda::add(channelsLab[0], 255, channelsLab[0], maskFinal);
+    cv::cuda::add(channelsLab[0], 25, channelsLab[0], maskFinal);
 
     cv::cuda::merge(channelsLab, labMat);
     return labMat;
@@ -166,6 +177,16 @@ cv::Mat BeeTracker2d::roiMask(cv::Mat input, int threshold)
     cv::bitwise_not(mask, not_mask);
     input.setTo(140*cv::Scalar(1, 1, 1), not_mask);
     return input;
+}
+
+int BeeTracker2d::getMaxFrame() const
+{
+    return m_maxFrame;
+}
+
+void BeeTracker2d::setMaxFrame(int maxFrame)
+{
+    m_maxFrame = maxFrame;
 }
 
 int BeeTracker2d::getThreshold() const

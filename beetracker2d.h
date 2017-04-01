@@ -21,6 +21,9 @@ public:
     int getThreshold() const;
     void setThreshold(int threshold);
 
+    int getMaxFrame() const;
+    void setMaxFrame(int maxFrame);
+
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
@@ -30,9 +33,11 @@ private:
     cv::Mat m_rawFrame;
     cv::Mat m_binaryFrame;
     cv::Mat m_smoothedFrame;
+    cv::Mat m_colorFilteredFrame;
+    cv::Mat m_identifierFrame;
 
     cv::cuda::GpuMat m_frameUnprocessed;
-    cv::cuda::GpuMat m_frameColorfiltered;
+    //cv::cuda::GpuMat m_frameColorfiltered;
     cv::cuda::GpuMat m_frameProcessed;
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilter;
@@ -40,6 +45,8 @@ private:
 
     bool m_flipFlag;
     int m_threshold = 125;
+
+    int m_maxFrame;
 
 };
 

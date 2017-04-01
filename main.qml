@@ -13,8 +13,9 @@ ApplicationWindow {
 
     function frameUpdate() {
         controller.update();
-        camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text;
+        camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
         camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+        timeStepSlider.to = controller.frameMax
     }
 
     header : ToolBar {
@@ -60,6 +61,7 @@ ApplicationWindow {
 
             ButtonGroup {
                 id : imageTypeGroup
+                onCheckedButtonChanged : frameUpdate()
             }
             Column{
                 id : imageType
@@ -77,6 +79,12 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
+                RadioButton {
+                    text : "ColorFiltered"
+                    checked : false
+                    ButtonGroup.group : imageTypeGroup
+                }
+
                 RadioButton {
                     text : "Smoothed"
                     checked : false
@@ -140,7 +148,7 @@ ApplicationWindow {
                 Rectangle{
                     width : parent.width
                     height : parent.height/2
-                    //color : parent.parent.color
+                    color : "transparent"
                     id : camArec
 
                     Image {
@@ -154,7 +162,7 @@ ApplicationWindow {
 
                 Rectangle{
                     id : camBrec
-                    //color : parent.parent.color
+                    color : "transparent"
                     //Layout.fillWidth:true
                     //Layout.fillHeight: true
                     width : parent.width
