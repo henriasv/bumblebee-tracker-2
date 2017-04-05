@@ -18,6 +18,10 @@ ApplicationWindow {
         timeStepSlider.to = controller.frameMax
     }
 
+    function togglePlay() {
+
+    }
+
     header : ToolBar {
         id : mainToolBar
         RowLayout {
@@ -29,6 +33,10 @@ ApplicationWindow {
             ToolButton {
                 text: "Save trajectories"
             }
+            Button {
+                text: "play"
+                onClicked: togglePlay()
+            }
 
             Slider {
                 id : timeStepSlider
@@ -38,7 +46,7 @@ ApplicationWindow {
                 to : 10000
                 stepSize: 1
                 snapMode: "SnapAlways"
-                onValueChanged: frameLabel.text=this.value, frameUpdate()
+                onValueChanged: frameLabel.text=parseInt(this.value), frameUpdate()
             }
             Label {
                 id : frameLabel

@@ -6,7 +6,7 @@ BeeTracker2d::BeeTracker2d()
     cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
 
     m_gaussianFilter = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(31, 31), 32);
-    cv::Mat element = getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+    cv::Mat element = getStructuringElement(cv::MORPH_CROSS, cv::Size(4, 4));
     m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_OPEN, CV_8UC1, element, cv::Point(-1,-1),1);
 }
 
@@ -31,14 +31,7 @@ cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
     m_frameUnprocessed.upload(m_cpuFrame);
 
     cv::cuda::cvtColor(m_frameUnprocessed, m_frameUnprocessed, CV_BGR2Lab);
-
     m_frameProcessed = processFrame(m_frameUnprocessed);
-    //cv::Mat frame2;
-    m_frameProcessed = m_frameUnprocessed;
-    cv::cuda::cvtColor(m_frameProcessed, m_frameProcessed, CV_Lab2RGB);
-    //cv::cvtColor(frame1, frame2, CV_BGR2RGB);
-    //m_frameProcessed.download(m_cpuFrame);
-
 
     cv::Mat retFrame;
     if (mode == "Raw")
@@ -82,19 +75,22 @@ cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
     cv::cuda::merge(channelsLab, labFrame);
     labFrame.download(m_smoothedFrame);
     cv::cuda::threshold(channelsLab[0], channelsLab[0], m_threshold, 255, cv::THRESH_BINARY_INV);
+    m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
     cv::cuda::merge(channelsLab, labFrame);
+
     labFrame.download(m_binaryFrame);
     cv::SimpleBlobDetector::Params params;
     params.minDistBetweenBlobs = 10.0f;
     params.filterByInertia = true;
     params.filterByConvexity = false;
-    params.filterByColor = false;
+    params.filterByColor = true;
     params.filterByCircularity = true;
     params.filterByArea = true;
+    params.blobColor = 255;
     params.minArea = 30.0;
     params.maxArea = 6000.0;
-    params.minInertiaRatio = 0.1;
-    params.minThreshold = 1;
+    params.minInertiaRatio = 0.05;
+    //params.minThreshold = 1;
     //params.minConvexity = 0.3;
     params.minCircularity = 0.1;
 
@@ -102,6 +98,7 @@ cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
     std::vector<cv::KeyPoint> keypoints;
 
     blob_detector->detect(m_binaryFrame, keypoints);
+    //blob_detector->detect(channelsLab[0], keypoints);
     //øm_firstFrame.copyTo(m_cpuFrame);
     for (auto blob : keypoints)
     {
@@ -134,7 +131,7 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
     cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
     cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
 
-    cv::cuda::add(channelsLab[0], 25, channelsLab[0], maskFinal);
+    cv::cuda::add(channelsLab[0], 30, channelsLab[0], maskFinal);
 
     cv::cuda::merge(channelsLab, labMat);
     return labMat;
