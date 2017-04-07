@@ -3,8 +3,10 @@
 
 #include <QObject>
 #include <QDebug>
+#include <memory>
 #include <controllerimageprovider.h>
 #include <beetracker2d.h>
+#include <stereohandler.h>
 
 class Controller : public QObject
 {
@@ -21,62 +23,40 @@ class Controller : public QObject
 
 public:
     Q_INVOKABLE void update();
+    Q_INVOKABLE void requestFrameUpdate(QString contents);
+
     explicit Controller(QObject *parent = 0);
     ControllerImageProvider* m_imageProvider;
-    BeeTracker2d camA;
-    BeeTracker2d camB;
+
+    std::shared_ptr<BeeTracker2d> camA;
+    std::shared_ptr<BeeTracker2d> camB;
+
+    std::shared_ptr<StereoHandler> m_stereo;
 
     QPixmap handlePixmapRequest(QString cam, int frameIndex, QString mode);
 
+    int m_framesInProcess = 0;
 
-int frameMax() const
-{
-    return m_frameMax;
-}
+    int frameMax() const;
 
-int frameMin() const
-{
-    return m_frameMin;
-}
+    int frameMin() const;
 
-int threshold() const
-{
-    return m_threshold;
-}
+    int threshold() const;
 
 signals:
 
-void frameMaxChanged(int frameMax);
+    void frameMaxChanged(int frameMax);
 
-void frameMinChanged(int frameMin);
+    void frameMinChanged(int frameMin);
 
-void thresholdChanged(int threshold);
+    void thresholdChanged(int threshold);
+
+    void framesUpdated();
 
 public slots:
-void setFrameMax(int frameMax)
-{
-    if (m_frameMax == frameMax)
-        return;
-
-    m_frameMax = frameMax;
-    emit frameMaxChanged(frameMax);
-}
-void setFrameMin(int frameMin)
-{
-    if (m_frameMin == frameMin)
-        return;
-
-    m_frameMin = frameMin;
-    emit frameMinChanged(frameMin);
-}
-void setThreshold(int threshold)
-{
-    if (m_threshold == threshold)
-        return;
-
-    m_threshold = threshold;
-    emit thresholdChanged(threshold);
-}
+    void setFrameMax(int frameMax);
+    void setFrameMin(int frameMin);
+    void setThreshold(int threshold);
 };
 
 #endif // CONTROLLER_H

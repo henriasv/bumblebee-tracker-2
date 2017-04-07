@@ -4,32 +4,35 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudafilters.hpp>
+#include <opencv2/cudacodec.hpp>
 
-
+class StereoHandler;
 class BeeTracker2d
 {
+    friend class StereoHandler;
 public:
     BeeTracker2d();
     cv::VideoCapture m_cam;
     void load(std::string filename, bool flipFlag);
-    cv::Mat getFrame(int frameIndex, std::string mode);
+    void getFrame(int frameIndex, std::string mode);
 
     int getThreshold() const;
     void setThreshold(int threshold);
 
     int getMaxFrame() const;
     void setMaxFrame(int maxFrame);
-
+    cv::Mat m_cpuFrame;
 private:
-    cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame);
+    cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
     cv::Mat roiMask(cv::Mat input, int threshold);
 
-    cv::Mat m_cpuFrame;
+
     cv::Mat m_rawFrame;
     cv::Mat m_binaryFrame;
     cv::Mat m_smoothedFrame;
@@ -47,6 +50,7 @@ private:
     int m_threshold = 125;
 
     int m_maxFrame;
+    int m_previousFrame = -1;
 
 };
 

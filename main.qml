@@ -11,14 +11,42 @@ ApplicationWindow {
     height: 480
     title: qsTr("Bumblebee")
 
+    Component.onCompleted: {
+        controller.framesUpdated.connect(function() {
+            timer.start()
+            camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+            camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+            camStereo.source="image://bumblebee/Stereo/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+        })
+    }
+
+
     function frameUpdate() {
         controller.update();
-        camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
-        camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+        controller.requestFrameUpdate(timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text);
         timeStepSlider.to = controller.frameMax
     }
 
+
+
+    Timer {
+        id : timer
+        repeat: false
+        interval : 10
+        onTriggered: timeStepSlider.value += 1
+    }
+
+
     function togglePlay() {
+        if (playButton.checked)
+        {
+            timer.stop()
+            timer.start()
+        }
+        else
+        {
+            timer.stop()
+        }
 
     }
 
@@ -34,8 +62,10 @@ ApplicationWindow {
                 text: "Save trajectories"
             }
             Button {
+                id : playButton
                 text: "play"
-                onClicked: togglePlay()
+                checkable: true
+                onClicked : togglePlay()
             }
 
             Slider {
@@ -111,6 +141,20 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
+                RadioButton {
+                    text : "SIFT"
+                    checked : false
+                    ButtonGroup.group : imageTypeGroup
+                    //exclusiveGroup : imageMode
+                }
+
+
+                Button {
+                    id : stereoButton
+                    checkable : true
+                    checked: false
+                    text : "Stereo"
+                }
 
 
                 TextField {
@@ -120,10 +164,10 @@ ApplicationWindow {
                 }
 
                 RangeSlider {
-                    from: 1
-                    to: 100
-                    first.value: 25
-                    second.value: 75
+                    from: -10
+                    to: 10
+                    first.value: -10
+                    second.value: 10
                 }
 
                 Button {
@@ -147,15 +191,15 @@ ApplicationWindow {
             //Layout.fillHeight: true
             anchors.fill : parent
         */
-            Column {
+            Row {
                 //anchors.fill: parent
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing : 10
 
                 Rectangle{
-                    width : parent.width
-                    height : parent.height/2
+                    width : parent.width/3
+                    height : parent.height
                     color : "transparent"
                     id : camArec
 
@@ -173,11 +217,27 @@ ApplicationWindow {
                     color : "transparent"
                     //Layout.fillWidth:true
                     //Layout.fillHeight: true
-                    width : parent.width
-                    height : parent.height/2
+                    width : parent.width/3
+                    height : parent.height
 
                     Image {
                         id: camB
+                        anchors.fill : parent
+                        source: "file:/Users/henriksveinsson/Desktop/plantegning.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                }
+                Rectangle{
+                    id : camStereoRec
+                    color : "transparent"
+                    //Layout.fillWidth:true
+                    //Layout.fillHeight: true
+                    width : parent.width/3
+                    height : parent.height
+
+                    Image {
+                        id: camStereo
                         anchors.fill : parent
                         source: "file:/Users/henriksveinsson/Desktop/plantegning.png"
                         fillMode: Image.PreserveAspectFit

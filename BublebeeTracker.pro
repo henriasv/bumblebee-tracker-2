@@ -1,16 +1,17 @@
 TEMPLATE = app
 TARGET = Bumblebee
 QT += qml quick multimediawidgets
-CONFIG += qt c++11 plugin
+CONFIG += qt c++14 plugin
 
-unix: LIBS += -L/usr/local/lib -lopencv_cudafilters -lopencv_cudaimgproc -lopencv_cudaarithm  -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_objdetect -lopencv_highgui -lopencv_videoio -lopencv_photo -lopencv_imgcodecs -lopencv_video -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core
+unix: LIBS += -L/usr/local/lib -lopencv_cudastereo -lopencv_cudacodec -lopencv_cudafilters -lopencv_cudaimgproc -lopencv_cudaarithm  -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_xfeatures2d -lopencv_objdetect -lopencv_highgui -lopencv_videoio -lopencv_photo -lopencv_imgcodecs -lopencv_video -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 
 SOURCES += main.cpp \
     controllerimageprovider.cpp \
     controller.cpp \
-    beetracker2d.cpp
+    beetracker2d.cpp \
+    stereohandler.cpp
 
 RESOURCES += qml.qrc \
     qmldir.qrc
@@ -40,5 +41,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += controllerimageprovider.h \
     controllerimageprovider.h \
     controller.h \
-    beetracker2d.h
+    beetracker2d.h \
+    stereohandler.h
 

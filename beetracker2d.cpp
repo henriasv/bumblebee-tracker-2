@@ -1,76 +1,125 @@
 #include "beetracker2d.h"
 #include <iostream>
+
 BeeTracker2d::BeeTracker2d()
 {
     cv::cuda::setDevice(0);
     cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
 
     m_gaussianFilter = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(31, 31), 32);
-    cv::Mat element = getStructuringElement(cv::MORPH_CROSS, cv::Size(4, 4));
+    cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(4, 4));
     m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_OPEN, CV_8UC1, element, cv::Point(-1,-1),1);
 }
 
 void BeeTracker2d::load(std::string filename, bool flipFlag)
 {
     m_flipFlag = flipFlag;
-    m_cam.open(filename);
+    m_cam.open(filename, CV_CAP_FFMPEG);
     setMaxFrame(m_cam.get(CV_CAP_PROP_FRAME_COUNT)-2);
 }
 
-cv::Mat BeeTracker2d::getFrame(int frameIndex, std::string mode)
+void BeeTracker2d::getFrame(int frameIndex, std::string mode)
 {
-    m_cam.set(CV_CAP_PROP_POS_FRAMES, frameIndex);
-    m_cam.read(m_cpuFrame);
+    if (m_previousFrame+1 != frameIndex)
+    {
+        m_cam.set(CV_CAP_PROP_POS_FRAMES, frameIndex);
+    }
+    m_previousFrame = frameIndex;
+    bool ret = m_cam.read(m_cpuFrame);
+    if (!ret)
+    {
+        m_cam.set(CV_CAP_PROP_POS_FRAMES, frameIndex);
+        ret = m_cam.read(m_cpuFrame);
+        if (!ret)
+        {
+            std::cout << "Failed to load frame on second attempt" << std::endl;
+
+        }
+    }
+
+    cv::transpose(m_cpuFrame, m_cpuFrame);
     if (m_flipFlag)
     {
         cv::flip(m_cpuFrame, m_cpuFrame, -1);
     }
-    m_cpuFrame.copyTo(m_rawFrame);
+
+    m_frameUnprocessed.upload(m_cpuFrame);
+
     m_cpuFrame.copyTo(m_identifierFrame);
+
+    if (mode == "Raw")
+    {
+        cv::cuda::cvtColor(m_frameUnprocessed, m_frameUnprocessed, CV_BGR2RGB);
+        m_frameUnprocessed.download(m_cpuFrame);
+        return;
+    }
+
+    if (mode == "SIFT")
+    {
+        cv::Mat gray;
+        cv::cvtColor(m_cpuFrame, gray, CV_BGR2GRAY);
+        int minHessian = 400;
+
+        //cv::xfeatures2d::SiftFeatureDetector detector;
+        //std::vector<cv::KeyPoint> keypoints;
+        //detector.detect( gray, keypoints);
+        cv::xfeatures2d::SurfFeatureDetector detector(100);
+        std::vector<cv::KeyPoint> keypoints;
+
+        //feature_detector->detect(gray, keypoints);
+        cv::drawKeypoints( m_cpuFrame, keypoints, m_cpuFrame, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+        return;
+    }
+
     m_cpuFrame = roiMask(m_cpuFrame, 140);
     m_frameUnprocessed.upload(m_cpuFrame);
 
     cv::cuda::cvtColor(m_frameUnprocessed, m_frameUnprocessed, CV_BGR2Lab);
-    m_frameProcessed = processFrame(m_frameUnprocessed);
+    m_frameProcessed = processFrame(m_frameUnprocessed, mode);
 
-    cv::Mat retFrame;
-    if (mode == "Raw")
+
+
+
+
+    if (mode == "Binary")
     {
-        cv::cvtColor(m_rawFrame, retFrame, CV_BGR2RGB);
-    }
-    else if (mode == "Binary")
-    {
-        cv::cvtColor(m_binaryFrame, retFrame, CV_Lab2RGB);
+        cv::cvtColor(m_binaryFrame, m_cpuFrame, CV_Lab2RGB);
     }
     else if (mode == "ColorFiltered")
     {
-        cv::cvtColor(m_colorFilteredFrame, retFrame, CV_Lab2RGB);
+        cv::cvtColor(m_colorFilteredFrame, m_cpuFrame, CV_Lab2RGB);
     }
     else if (mode == "Smoothed")
     {
-        cv::cvtColor(m_smoothedFrame, retFrame, CV_Lab2RGB);
+        cv::cvtColor(m_smoothedFrame, m_cpuFrame, CV_Lab2RGB);
     }
     else if (mode == "Raw + Identifiers")
     {
-        cv::cvtColor(m_identifierFrame, retFrame, CV_BGR2RGB);
+        cv::cvtColor(m_identifierFrame, m_cpuFrame, CV_BGR2RGB);
     }
     else
     {
-        cv::cvtColor(m_cpuFrame, retFrame, CV_Lab2RGB);
+        cv::cvtColor(m_cpuFrame, m_cpuFrame, CV_Lab2RGB);
     }
-    return retFrame;
 }
 
 
-cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
+cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame, std::string mode)
 {
     labFrame = colorFilter(labFrame);
-    labFrame.download(m_colorFilteredFrame);
+    if (mode == "ColorFiltered")
+        {
+            labFrame.download(m_colorFilteredFrame);
+            return labFrame;
+        }
+
     std::vector<cv::cuda::GpuMat> channelsLab(3);
     cv::cuda::split(labFrame, channelsLab);
     cv::cuda::GpuMat smoothed;
     m_gaussianFilter->apply(channelsLab[0], smoothed);
-    m_gaussianFilter->apply(smoothed, smoothed);
+    //m_gaussianFilter->apply(smoothed, smoothed);
+    //m_gaussianFilter->apply(smoothed, smoothed);
+    //m_gaussianFilter->apply(smoothed, smoothed);
     cv::cuda::addWeighted(channelsLab[0], 1, smoothed, -1, 150, channelsLab[0]);
     cv::cuda::merge(channelsLab, labFrame);
     labFrame.download(m_smoothedFrame);
@@ -90,7 +139,7 @@ cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame)
     params.minArea = 30.0;
     params.maxArea = 6000.0;
     params.minInertiaRatio = 0.05;
-    //params.minThreshold = 1;
+    params.minThreshold = 1;
     //params.minConvexity = 0.3;
     params.minCircularity = 0.1;
 
@@ -122,7 +171,7 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
     cv::cuda::threshold(channelsLab[1], maskGreen, 120, 255, cv::THRESH_BINARY_INV);
     cv::cuda::threshold(channelsLab[1], maskBlueA, 126, 255, cv::THRESH_BINARY_INV);
     cv::cuda::threshold(channelsLab[2], maskBlueB, 126, 255, cv::THRESH_BINARY_INV);
-    cv::cuda::threshold(channelsLab[2], maskYellow, 144, 255, cv::THRESH_BINARY);
+    cv::cuda::threshold(channelsLab[2], maskYellow, 150, 255, cv::THRESH_BINARY);
     cv::cuda::threshold(channelsLab[1], maskPurple, 135, 255, cv::THRESH_BINARY);
 
     cv::cuda::bitwise_and(maskBlueA, maskBlueB, maskBlue);
@@ -130,6 +179,8 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
     cv::cuda::bitwise_or(maskBlue, maskYellow, maskFinal);
     cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
     cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
+
+    m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
 
     cv::cuda::add(channelsLab[0], 30, channelsLab[0], maskFinal);
 
