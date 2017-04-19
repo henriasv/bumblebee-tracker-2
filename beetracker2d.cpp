@@ -63,11 +63,11 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
         //cv::xfeatures2d::SiftFeatureDetector detector;
         //std::vector<cv::KeyPoint> keypoints;
         //detector.detect( gray, keypoints);
-        cv::xfeatures2d::SurfFeatureDetector detector(100);
-        std::vector<cv::KeyPoint> keypoints;
+        //cv::xfeatures2d::SurfFeatureDetector detector(100);
+        //std::vector<cv::KeyPoint> keypoints;
 
         //feature_detector->detect(gray, keypoints);
-        cv::drawKeypoints( m_cpuFrame, keypoints, m_cpuFrame, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
+        //cv::drawKeypoints( m_cpuFrame, keypoints, m_cpuFrame, cv::Scalar::all(-1), cv::DrawMatchesFlags::DEFAULT );
         return;
     }
 
@@ -180,7 +180,7 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
     cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
     cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
 
-    m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
+    //m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
 
     cv::cuda::add(channelsLab[0], 30, channelsLab[0], maskFinal);
 

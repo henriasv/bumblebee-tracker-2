@@ -2,22 +2,21 @@
 #include <QDebug>
 #include <jsoncpp/json/json.h>
 
-void Controller::update()
-{
-    camA->setThreshold(m_threshold);
-    camB->setThreshold(m_threshold);
-    qDebug() << "in update";
-    qDebug() << "threshold: " << m_threshold;
-}
 
-void Controller::requestFrameUpdate(QString id)
+void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
 {
+    camA->setThreshold(threshold);
+    camB->setThreshold(threshold);
+
     QStringList strings = id.split("/");
     int frameIndex = strings[0].toInt();
     QString mode = strings[1];
     camA->getFrame(frameIndex, mode.toStdString());
     camB->getFrame(frameIndex, mode.toStdString());
-    m_stereo->compute();
+    if (stereo)
+    {
+        m_stereo->compute();
+    }
     emit framesUpdated();
 }
 

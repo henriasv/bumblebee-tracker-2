@@ -17,13 +17,13 @@ ApplicationWindow {
             camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
             camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
             camStereo.source="image://bumblebee/Stereo/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+
         })
     }
 
 
     function frameUpdate() {
-        controller.update();
-        controller.requestFrameUpdate(timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text);
+        controller.requestFrameUpdate(timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text, parseInt(thresholdField.text), stereoButton.checked);
         timeStepSlider.to = controller.frameMax
     }
 
@@ -32,7 +32,7 @@ ApplicationWindow {
     Timer {
         id : timer
         repeat: false
-        interval : 10
+        interval : 5
         onTriggered: timeStepSlider.value += 1
     }
 
@@ -160,7 +160,7 @@ ApplicationWindow {
                 TextField {
                     id : thresholdField
                     text : "120"
-                    onEditingFinished: controller.threshold = parseInt(text), frameUpdate();
+                    inputMethodHints: Qt.ImhDigitsOnly
                 }
 
                 RangeSlider {
@@ -170,11 +170,6 @@ ApplicationWindow {
                     second.value: 10
                 }
 
-                Button {
-                    id : updateButton
-                    text : "Update"
-                    onClicked : frameUpdate()
-                }
             }
 
            // }

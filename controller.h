@@ -22,8 +22,7 @@ class Controller : public QObject
     int m_threshold;
 
 public:
-    Q_INVOKABLE void update();
-    Q_INVOKABLE void requestFrameUpdate(QString contents);
+    Q_INVOKABLE void requestFrameUpdate(QString contents, int threshold, bool stereo);
 
     explicit Controller(QObject *parent = 0);
     ControllerImageProvider* m_imageProvider;
