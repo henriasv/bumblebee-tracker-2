@@ -1,6 +1,5 @@
 #include "controller.h"
 #include <QDebug>
-#include <jsoncpp/json/json.h>
 
 
 void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
@@ -20,6 +19,13 @@ void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
     emit framesUpdated();
 }
 
+
+void Controller::setParameters(int window1, int window2, int minimumArea, int maximumArea)
+{
+    camA->setParameters(window1, window2, minimumArea, maximumArea);
+    camB->setParameters(window1, window2, minimumArea, maximumArea);
+}
+
 Controller::Controller(QObject *parent) : QObject(parent)
 {
     m_frameMax = 1;
@@ -28,8 +34,10 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_imageProvider->setController(this);
     camA = std::make_shared<BeeTracker2d>();
     camB = std::make_shared<BeeTracker2d>();
-    camA->load("/home/henriasv/git_repos/bumblebee-tracker-2/testVideo/GOPR0034.MP4", true);
-    camB->load("/home/henriasv/git_repos/bumblebee-tracker-2/testVideo/GOPR0055.MP4", false);
+    camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
+    camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
+    //camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
+    //camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
     setFrameMax(camB->getMaxFrame());
 }

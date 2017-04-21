@@ -6,9 +6,29 @@ BeeTracker2d::BeeTracker2d()
     cv::cuda::setDevice(0);
     cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
 
-    m_gaussianFilter = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(31, 31), 32);
-    cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(4, 4));
-    m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_OPEN, CV_8UC1, element, cv::Point(-1,-1),1);
+    m_gaussianFilter = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(5, 5), 32);
+    m_gaussianFilterDOG1 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(15, 15), 32);
+    m_gaussianFilterDOG2 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(31, 31), 32);
+
+    m_scharrFilter = cv::cuda::createScharrFilter(CV_8UC1, CV_8UC1, 0, 1);
+    cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+    //m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_OPEN, CV_8UC1, element, cv::Point(-1,-1),1);
+    m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_DILATE, CV_8UC1, element, cv::Point(-1,-1),1);
+
+    m_blobParams.minDistBetweenBlobs = 1.0f;
+    m_blobParams.filterByInertia = false;
+    m_blobParams.filterByConvexity = false;
+    m_blobParams.filterByColor = false;
+    m_blobParams.filterByCircularity = false;
+
+    m_blobParams.filterByArea = true;
+    m_blobParams.minArea = 100.0f;
+    m_blobParams.maxArea = 100000.0f;
+    //params.minInertiaRatio = 0.05;
+    //params.minThreshold = 0;
+    //params.maxThreshold = 130;
+    //params.minConvexity = 0.3;
+    //params.minCircularity = 0.1;
 }
 
 void BeeTracker2d::load(std::string filename, bool flipFlag)
@@ -26,9 +46,11 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
     }
     m_previousFrame = frameIndex;
     bool ret = m_cam.read(m_cpuFrame);
-    if (!ret)
+
+
+    while (!ret)
     {
-        m_cam.set(CV_CAP_PROP_POS_FRAMES, frameIndex);
+        m_cam.set(CV_CAP_PROP_POS_FRAMES, ++frameIndex);
         ret = m_cam.read(m_cpuFrame);
         if (!ret)
         {
@@ -45,7 +67,6 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
 
     m_frameUnprocessed.upload(m_cpuFrame);
 
-    m_cpuFrame.copyTo(m_identifierFrame);
 
     if (mode == "Raw")
     {
@@ -78,85 +99,90 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
     m_frameProcessed = processFrame(m_frameUnprocessed, mode);
 
 
+    if (mode == "Raw + Identifiers")
+    {
+        std::vector<cv::cuda::GpuMat> channelsLab;
+        cv::cuda::split(m_frameProcessed, channelsLab);
+        channelsLab[0].download(m_binaryFrame);
+        std::cout << "Processing raw + identifiers" << std::endl;
+        cv::cvtColor(m_cpuFrame, m_cpuFrame, CV_BGR2RGB);
 
 
 
-    if (mode == "Binary")
-    {
-        cv::cvtColor(m_binaryFrame, m_cpuFrame, CV_Lab2RGB);
-    }
-    else if (mode == "ColorFiltered")
-    {
-        cv::cvtColor(m_colorFilteredFrame, m_cpuFrame, CV_Lab2RGB);
-    }
-    else if (mode == "Smoothed")
-    {
-        cv::cvtColor(m_smoothedFrame, m_cpuFrame, CV_Lab2RGB);
-    }
-    else if (mode == "Raw + Identifiers")
-    {
-        cv::cvtColor(m_identifierFrame, m_cpuFrame, CV_BGR2RGB);
+
+        cv::Ptr<cv::SimpleBlobDetector> blob_detector = cv::SimpleBlobDetector::create(m_blobParams);
+        std::vector<cv::KeyPoint> keypoints;
+
+        blob_detector->detect(m_binaryFrame, keypoints);
+        for (auto blob : keypoints)
+        {
+            cv::circle(m_cpuFrame, blob.pt, 5, cv::Scalar(0, 255, 0), -1);
+        }
     }
     else
     {
-        cv::cvtColor(m_cpuFrame, m_cpuFrame, CV_Lab2RGB);
+        cv::cuda::cvtColor(m_frameProcessed, m_frameProcessed, CV_Lab2RGB);
+        m_frameProcessed.download(m_cpuFrame);
     }
+}
+
+void BeeTracker2d::setParameters(int window1, int window2, int minimumArea, int maximumArea)
+{
+    m_gaussianFilterDOG1 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(window1, window1), 32);
+    m_gaussianFilterDOG2 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(window2, window2), 32);
+    m_blobParams.minArea = minimumArea;
+    m_blobParams.maxArea = maximumArea;
 }
 
 
 cv::cuda::GpuMat BeeTracker2d::processFrame(cv::cuda::GpuMat labFrame, std::string mode)
 {
-    labFrame = colorFilter(labFrame);
-    if (mode == "ColorFiltered")
-        {
-            labFrame.download(m_colorFilteredFrame);
-            return labFrame;
-        }
 
     std::vector<cv::cuda::GpuMat> channelsLab(3);
     cv::cuda::split(labFrame, channelsLab);
-    cv::cuda::GpuMat smoothed;
-    m_gaussianFilter->apply(channelsLab[0], smoothed);
-    //m_gaussianFilter->apply(smoothed, smoothed);
-    //m_gaussianFilter->apply(smoothed, smoothed);
-    //m_gaussianFilter->apply(smoothed, smoothed);
-    cv::cuda::addWeighted(channelsLab[0], 1, smoothed, -1, 150, channelsLab[0]);
-    cv::cuda::merge(channelsLab, labFrame);
-    labFrame.download(m_smoothedFrame);
-    cv::cuda::threshold(channelsLab[0], channelsLab[0], m_threshold, 255, cv::THRESH_BINARY_INV);
-    m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
-    cv::cuda::merge(channelsLab, labFrame);
-
-    labFrame.download(m_binaryFrame);
-    cv::SimpleBlobDetector::Params params;
-    params.minDistBetweenBlobs = 10.0f;
-    params.filterByInertia = true;
-    params.filterByConvexity = false;
-    params.filterByColor = true;
-    params.filterByCircularity = true;
-    params.filterByArea = true;
-    params.blobColor = 255;
-    params.minArea = 30.0;
-    params.maxArea = 6000.0;
-    params.minInertiaRatio = 0.05;
-    params.minThreshold = 1;
-    //params.minConvexity = 0.3;
-    params.minCircularity = 0.1;
-
-    cv::Ptr<cv::SimpleBlobDetector> blob_detector = cv::SimpleBlobDetector::create(params);
-    std::vector<cv::KeyPoint> keypoints;
-
-    blob_detector->detect(m_binaryFrame, keypoints);
-    //blob_detector->detect(channelsLab[0], keypoints);
-    //øm_firstFrame.copyTo(m_cpuFrame);
-    for (auto blob : keypoints)
+    for (int i = 0; i<3; i++)
     {
-        //cv::floodFill(m_frameFinal, blob.pt, 0);
-        cv::circle(m_identifierFrame, blob.pt, 5, cv::Scalar(0, 255, 0), -1);
+        m_gaussianFilter->apply(channelsLab[i], channelsLab[i]);
     }
+    cv::cuda::merge(channelsLab, labFrame);
+    labFrame = colorFilter(labFrame);
+    //labFrame = simpleColorFilter(labFrame);
+    if (mode == "ColorFiltered")
+        {
+            return labFrame;
+        }
 
+
+
+    cv::cuda::split(labFrame, channelsLab);
+    cv::cuda::GpuMat dog1;
+    cv::cuda::GpuMat dog2;
+
+    m_gaussianFilterDOG1->apply(channelsLab[0], dog1);
+    m_gaussianFilterDOG2->apply(channelsLab[0], dog2);
+    cv::cuda::subtract(dog2,dog1, channelsLab[0]);
+    /*
+    m_gaussianFilterDOG1->apply(channelsLab[1], dog1);
+    m_gaussianFilterDOG2->apply(channelsLab[1], dog2);
+    cv::cuda::subtract(dog2,dog1, channelsLab[1]);
+    m_scharrFilter->apply(channelsLab[0], channelsLab[0]);
+    m_gaussianFilterDOG1->apply(channelsLab[2], dog1);
+    m_gaussianFilterDOG2->apply(channelsLab[2], dog2);
+    cv::cuda::subtract(dog2,dog1, channelsLab[2]);
+    */
+    cv::cuda::multiply(channelsLab[0], 10, channelsLab[0]);
+    cv::cuda::merge(channelsLab, labFrame);
+
+    if (mode == "DOG")
+        return labFrame;
+
+    cv::cuda::threshold(channelsLab[0], channelsLab[0], m_threshold, 255, cv::THRESH_BINARY_INV);
+    //m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
+    cv::cuda::merge(channelsLab, labFrame);
     return labFrame;
 }
+
+
 
 cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
 {
@@ -169,23 +195,51 @@ cv::cuda::GpuMat BeeTracker2d::colorFilter(cv::cuda::GpuMat labMat)
 
     cv::cuda::threshold(channelsLab[2], maskBlueB2, 123, 255, cv::THRESH_BINARY_INV);
     cv::cuda::threshold(channelsLab[1], maskGreen, 120, 255, cv::THRESH_BINARY_INV);
-    cv::cuda::threshold(channelsLab[1], maskBlueA, 126, 255, cv::THRESH_BINARY_INV);
-    cv::cuda::threshold(channelsLab[2], maskBlueB, 126, 255, cv::THRESH_BINARY_INV);
-    cv::cuda::threshold(channelsLab[2], maskYellow, 150, 255, cv::THRESH_BINARY);
+    cv::cuda::threshold(channelsLab[1], maskBlueA, 125, 255, cv::THRESH_BINARY_INV);
+    cv::cuda::threshold(channelsLab[2], maskBlueB, 125, 255, cv::THRESH_BINARY_INV);
+    cv::cuda::threshold(channelsLab[2], maskYellow, 160, 255, cv::THRESH_BINARY);
     cv::cuda::threshold(channelsLab[1], maskPurple, 135, 255, cv::THRESH_BINARY);
 
     cv::cuda::bitwise_and(maskBlueA, maskBlueB, maskBlue);
     cv::cuda::bitwise_or(maskBlue, maskBlueB2, maskBlue);
-    cv::cuda::bitwise_or(maskBlue, maskYellow, maskFinal);
-    cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
-    cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
+    //cv::cuda::bitwise_or(maskBlue, maskYellow, maskFinal);
+    //cv::cuda::bitwise_or(maskGreen, maskFinal, maskFinal);
+    //cv::cuda::bitwise_or(maskFinal, maskPurple, maskFinal);
 
-    //m_morphologyFilter->apply(channelsLab[0], channelsLab[0]);
+    m_morphologyFilter->apply(maskBlue, maskBlue);
 
-    cv::cuda::add(channelsLab[0], 30, channelsLab[0], maskFinal);
+    cv::cuda::add(channelsLab[0], 50, channelsLab[0], maskBlue);
+
 
     cv::cuda::merge(channelsLab, labMat);
     return labMat;
+}
+
+cv::cuda::GpuMat BeeTracker2d::simpleColorFilter(cv::cuda::GpuMat labFrame)
+{
+    std::vector<cv::cuda::GpuMat> channelsLab;
+    cv::cuda::split(labFrame, channelsLab);
+
+    //cv::cuda::subtract(channelsLab[0], 127, channelsLab[0]);
+    cv::cuda::subtract(channelsLab[1], 127, channelsLab[1]);
+    cv::cuda::subtract(channelsLab[2], 127, channelsLab[2]);
+    cv::cuda::sqr(channelsLab[1], channelsLab[1]);
+    cv::cuda::sqr(channelsLab[2], channelsLab[2]);
+
+    cv::cuda::GpuMat sqrValue;
+
+    cv::cuda::add(channelsLab[1], channelsLab[2], sqrValue);
+
+    cv::cuda::GpuMat mask;
+
+    cv::cuda::threshold(sqrValue, mask, 5, 255, cv::THRESH_BINARY);
+
+    cv::cuda::split(labFrame, channelsLab);
+
+    cv::cuda::add(channelsLab[0], 30, channelsLab[0], mask);
+
+    cv::cuda::merge(channelsLab, labFrame);
+    return labFrame;
 }
 
 

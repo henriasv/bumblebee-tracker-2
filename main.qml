@@ -33,7 +33,7 @@ ApplicationWindow {
         id : timer
         repeat: false
         interval : 5
-        onTriggered: timeStepSlider.value += 1
+        onTriggered: if (playButton.checked) {timeStepSlider.value += 1}
     }
 
 
@@ -111,24 +111,20 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
-                RadioButton {
-                    text : "Lab"
-                    checked : false
-                    ButtonGroup.group : imageTypeGroup
-                    //exclusiveGroup : imageMode
-                }
+
                 RadioButton {
                     text : "ColorFiltered"
                     checked : false
                     ButtonGroup.group : imageTypeGroup
                 }
 
-                RadioButton {
-                    text : "Smoothed"
+                RadioButton{
+                    text : "DOG"
                     checked : false
                     ButtonGroup.group : imageTypeGroup
-                    //exclusiveGroup : imageMode
                 }
+
+
                 RadioButton {
                     text : "Binary"
                     checked : false
@@ -156,18 +152,58 @@ ApplicationWindow {
                     text : "Stereo"
                 }
 
+                Label {
+                    text : "Threshold"
+                }
 
                 TextField {
                     id : thresholdField
-                    text : "120"
+                    text : "60"
                     inputMethodHints: Qt.ImhDigitsOnly
                 }
 
-                RangeSlider {
-                    from: -10
-                    to: 10
-                    first.value: -10
-                    second.value: 10
+                Label {
+                    text : "Lower Gaussian width"
+                }
+
+                TextField {
+                    id : dogField1
+                    text : "15"
+                    inputMethodHints: Qt.ImhDigitsOnly
+                }
+
+                Label {
+                    text : "Upper Gaussian width"
+                }
+
+                TextField {
+                    id : dogField2
+                    text : "15"
+                    inputMethodHints: Qt.ImhDigitsOnly
+                }
+
+                Label {
+                    text : "Minimum Area"
+                }
+
+                TextField {
+                    id : minimumAreaField
+                    text : "100"
+                }
+
+                Label {
+                    text : "Maximum Area"
+                }
+
+                TextField {
+                    id : maximumAreaField
+                    text : "2000"
+                }
+
+                Button {
+                    id : dogButton
+                    text: "Invoke settings"
+                    onPressed: controller.setParameters(parseInt(dogField1.text), parseInt(dogField2.text), parseInt(minimumAreaField.text), parseInt(maximumAreaField.text))
                 }
 
             }

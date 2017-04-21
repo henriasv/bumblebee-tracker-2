@@ -23,6 +23,8 @@ class Controller : public QObject
 
 public:
     Q_INVOKABLE void requestFrameUpdate(QString contents, int threshold, bool stereo);
+    Q_INVOKABLE void setParameters(int window1, int window2, int minimumArea, int maximumArea);
+
 
     explicit Controller(QObject *parent = 0);
     ControllerImageProvider* m_imageProvider;

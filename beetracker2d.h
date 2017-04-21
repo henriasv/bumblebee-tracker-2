@@ -9,7 +9,6 @@
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudafilters.hpp>
-#include <opencv2/cudacodec.hpp>
 
 class StereoHandler;
 class BeeTracker2d
@@ -20,6 +19,7 @@ public:
     cv::VideoCapture m_cam;
     void load(std::string filename, bool flipFlag);
     void getFrame(int frameIndex, std::string mode);
+    void setParameters(int window1, int window2, int minimumArea, int maximumArea);
 
     int getThreshold() const;
     void setThreshold(int threshold);
@@ -30,14 +30,17 @@ public:
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
+    cv::cuda::GpuMat simpleColorFilter(cv::cuda::GpuMat labFrame);
     cv::Mat roiMask(cv::Mat input, int threshold);
 
+    cv::SimpleBlobDetector::Params m_blobParams;
 
-    cv::Mat m_rawFrame;
+    //cv::Mat m_rawFrame;
     cv::Mat m_binaryFrame;
-    cv::Mat m_smoothedFrame;
-    cv::Mat m_colorFilteredFrame;
+    //cv::Mat m_smoothedFrame;
+    //cv::Mat m_colorFilteredFrame;
     cv::Mat m_identifierFrame;
+    //cv::Mat m_outputFrame;
 
     cv::cuda::GpuMat m_frameUnprocessed;
     //cv::cuda::GpuMat m_frameColorfiltered;
@@ -45,6 +48,10 @@ private:
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilter;
     cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
+    cv::Ptr<cv::cuda::Filter> m_scharrFilter;
+
+    cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG1;
+    cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG2;
 
     bool m_flipFlag;
     int m_threshold = 125;
