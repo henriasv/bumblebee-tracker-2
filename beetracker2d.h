@@ -6,6 +6,8 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d.hpp>
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/xfeatures2d/cuda.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudafilters.hpp>
@@ -27,6 +29,7 @@ public:
     int getMaxFrame() const;
     void setMaxFrame(int maxFrame);
     cv::Mat m_cpuFrame;
+    cv::Mat m_gray;
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
@@ -48,10 +51,18 @@ private:
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilter;
     cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
+    cv::Ptr<cv::cuda::Filter> m_erodeFilter;
+
     cv::Ptr<cv::cuda::Filter> m_scharrFilter;
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG1;
     cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG2;
+    cv::Ptr<cv::cuda::Filter> m_gaussianFilterMax;
+    cv::cuda::SURF_CUDA m_surfDetector;
+    cv::cuda::GpuMat keypoints1GPU;
+    cv::cuda::GpuMat descriptors1GPU;
+    std::vector<cv::KeyPoint> keypoints;
+    std::vector<float> descriptors;
 
     bool m_flipFlag;
     int m_threshold = 125;

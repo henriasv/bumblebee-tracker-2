@@ -138,7 +138,7 @@ ApplicationWindow {
                     //exclusiveGroup : imageMode
                 }
                 RadioButton {
-                    text : "SIFT"
+                    text : "Features"
                     checked : false
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
@@ -158,7 +158,7 @@ ApplicationWindow {
 
                 TextField {
                     id : thresholdField
-                    text : "60"
+                    text : "100"
                     inputMethodHints: Qt.ImhDigitsOnly
                 }
 
@@ -178,7 +178,7 @@ ApplicationWindow {
 
                 TextField {
                     id : dogField2
-                    text : "15"
+                    text : "31"
                     inputMethodHints: Qt.ImhDigitsOnly
                 }
 

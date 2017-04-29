@@ -34,10 +34,10 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_imageProvider->setController(this);
     camA = std::make_shared<BeeTracker2d>();
     camB = std::make_shared<BeeTracker2d>();
-    camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
-    camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
-    //camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
-    //camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
+    //camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
+    //camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
+    camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
+    camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
     setFrameMax(camB->getMaxFrame());
 }
