@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
+import QtQuick.Dialogs 1.2
 import TrackingController 1.0
 
 ApplicationWindow {
@@ -32,7 +33,7 @@ ApplicationWindow {
     Timer {
         id : timer
         repeat: false
-        interval : 5
+        interval : 10
         onTriggered: if (playButton.checked) {timeStepSlider.value += 1}
     }
 
@@ -50,6 +51,41 @@ ApplicationWindow {
 
     }
 
+    FileDialog {
+        id : saveFileDialog
+        title: "Select output file"
+        visible: false
+        selectExisting: false
+        onAccepted: console.log("You chose: " + saveFileDialog.fileUrls), msg.open()
+    }
+
+    function saveTrajectories(url) {
+        controller.initializeJsonFile(url)
+        for (var i = saveTrajectoriesSlider.first.value; i < saveTrajectoriesSlider.second.value; i++) {
+            playButton.checked = false
+            //timeStepSlider.value = parseInt(i)
+            controller.requestFrameUpdate(i+"/"+imageTypeGroup.checkedButton.text, parseInt(thresholdField.text), stereoButton.checked);
+            controller.appendKeypointsToFile()
+        }
+        controller.finalizeJsonFile()
+    }
+
+    Dialog {
+            id: msg
+            title: "Title"
+            standardButtons: StandardButton.Save | StandardButton.Cancel
+            onAccepted: saveTrajectories(saveFileDialog.fileUrl), visible = false
+            ColumnLayout {
+                RangeSlider{
+                    id : saveTrajectoriesSlider
+                    from : 0
+                    to : controller.frameMax
+                    first.value : 100
+                    second.value : 120
+                }
+            }
+        }
+
     header : ToolBar {
         id : mainToolBar
         RowLayout {
@@ -60,6 +96,7 @@ ApplicationWindow {
             }
             ToolButton {
                 text: "Save trajectories"
+                onClicked: saveFileDialog.open()
             }
             Button {
                 id : playButton

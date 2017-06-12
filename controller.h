@@ -7,6 +7,8 @@
 #include <controllerimageprovider.h>
 #include <beetracker2d.h>
 #include <stereohandler.h>
+#include <fstream>
+#include <QUrl>
 
 class Controller : public QObject
 {
@@ -24,7 +26,9 @@ class Controller : public QObject
 public:
     Q_INVOKABLE void requestFrameUpdate(QString contents, int threshold, bool stereo);
     Q_INVOKABLE void setParameters(int window1, int window2, int minimumArea, int maximumArea);
-
+    Q_INVOKABLE void initializeJsonFile(QUrl filename);
+    Q_INVOKABLE void finalizeJsonFile();
+    Q_INVOKABLE void appendKeypointsToFile();
 
     explicit Controller(QObject *parent = 0);
     ControllerImageProvider* m_imageProvider;
@@ -43,6 +47,9 @@ public:
     int frameMin() const;
 
     int threshold() const;
+private:
+    std::ofstream m_jsonFile;
+    bool hasWrittenFrame = false;
 
 signals:
 

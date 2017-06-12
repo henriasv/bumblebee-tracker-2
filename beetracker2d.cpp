@@ -1,5 +1,6 @@
 #include "beetracker2d.h"
 #include <iostream>
+#include <fstream>
 
 BeeTracker2d::BeeTracker2d()
 {
@@ -135,6 +136,21 @@ void BeeTracker2d::setParameters(int window1, int window2, int minimumArea, int 
     m_gaussianFilterDOG2 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(window2, window2), 32);
     m_blobParams.minArea = minimumArea;
     m_blobParams.maxArea = maximumArea;
+}
+
+QString BeeTracker2d::getDumpString()
+{
+    QString outString;
+    QTextStream out(&outString);
+    out << "{ \"Frame\" : " << m_previousFrame << ",\n \"Keypoints\" : [";
+    for (int i = 0; i<keypoints.size()-1; i++)
+    {
+        out <<" [ " << keypoints[i].pt.x << ", " << keypoints[i].pt.y << " ], \n";
+    }
+    out <<" [ " << keypoints[keypoints.size()-1].pt.x << ", " << keypoints[keypoints.size()-1].pt.y << " ] \n";
+    out << "] \n }";
+    //QDebug() << outString;
+    return outString;
 }
 
 

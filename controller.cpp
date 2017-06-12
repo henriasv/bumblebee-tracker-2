@@ -26,6 +26,31 @@ void Controller::setParameters(int window1, int window2, int minimumArea, int ma
     camB->setParameters(window1, window2, minimumArea, maximumArea);
 }
 
+void Controller::initializeJsonFile(QUrl filename)
+{
+    m_jsonFile.open(filename.toLocalFile().toStdString(), std::ofstream::out);
+    m_jsonFile << "[\n";
+}
+
+void Controller::finalizeJsonFile()
+{
+    m_jsonFile << "\n]\n";
+    m_jsonFile.close();
+}
+
+void Controller::appendKeypointsToFile()
+{
+    if (hasWrittenFrame)
+    {
+        m_jsonFile << ",\n";
+    }
+    else
+    {
+        hasWrittenFrame = true;
+    }
+    m_jsonFile << camA->getDumpString().toStdString();
+}
+
 Controller::Controller(QObject *parent) : QObject(parent)
 {
     m_frameMax = 1;
