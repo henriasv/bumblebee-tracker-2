@@ -11,6 +11,10 @@
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudafilters.hpp>
+#include <QString>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
 
 class StereoHandler;
 class BeeTracker2d
@@ -22,6 +26,8 @@ public:
     void load(std::string filename, bool flipFlag);
     void getFrame(int frameIndex, std::string mode);
     void setParameters(int window1, int window2, int minimumArea, int maximumArea);
+
+    QString getDumpString();
 
     int getThreshold() const;
     void setThreshold(int threshold);
