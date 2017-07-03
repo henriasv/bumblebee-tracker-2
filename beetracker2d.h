@@ -41,6 +41,7 @@ private:
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
     cv::cuda::GpuMat simpleColorFilter(cv::cuda::GpuMat labFrame);
     cv::Mat roiMask(cv::Mat input, int threshold);
+    cv::Mat hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
     cv::SimpleBlobDetector::Params m_blobParams;
 

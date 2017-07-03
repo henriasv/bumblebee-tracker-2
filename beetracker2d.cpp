@@ -12,7 +12,7 @@ BeeTracker2d::BeeTracker2d()
     m_gaussianFilterDOG1 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(15, 15), 32);
     m_gaussianFilterDOG2 = cv::cuda::createGaussianFilter(CV_8UC1, CV_8UC1, cv::Size(31, 31), 32);
 
-    m_surfDetector = cv::cuda::SURF_CUDA(50, 6, 4, true, 0.01f, true);
+    m_surfDetector = cv::cuda::SURF_CUDA(50000, 6, 4, true, 0.1f, true);
 
     m_scharrFilter = cv::cuda::createScharrFilter(CV_8UC1, CV_8UC1, 0, 1);
     cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(4, 4));
@@ -40,8 +40,21 @@ BeeTracker2d::BeeTracker2d()
 
 void BeeTracker2d::load(std::string filename, bool flipFlag)
 {
+    std::ifstream infile(filename);
+    if (!infile.is_open())
+    {
+        std::cout << "impossible to open video file" << std::endl;
+    }
+    else
+    {
+        infile.close();
+    }
     m_flipFlag = flipFlag;
-    m_cam.open(filename, CV_CAP_FFMPEG);
+    m_cam.open(filename);
+    if (!m_cam.isOpened())
+    {
+        std::cout << "Could not open video source" << std::endl;
+    }
     setMaxFrame(m_cam.get(CV_CAP_PROP_FRAME_COUNT)-2);
 }
 
@@ -53,10 +66,11 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
     }
 
     bool ret = m_cam.read(m_cpuFrame);
-
+    std::cout << "Frame reported by video stream" << m_cam.get(CV_CAP_PROP_POS_FRAMES) << std::endl;
 
     while (!ret)
     {
+        std::cout << "Frame reported by video stream" << m_cam.get(CV_CAP_PROP_POS_FRAMES) << std::endl;
         m_cam.set(CV_CAP_PROP_POS_FRAMES, ++frameIndex);
         ret = m_cam.read(m_cpuFrame);
         if (!ret)
@@ -80,7 +94,15 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
 
 
 
-    m_cpuFrame = roiMask(m_cpuFrame, 130);
+    //m_cpuFrame = roiMask(m_cpuFrame, 130);
+    if (m_flipFlag)
+    {
+        m_cpuFrame = hardCodedRoiMask(m_cpuFrame, 55, 100, 1460, 580, 1460, 2120, 65, 2595);
+    }
+    else
+    {
+        m_cpuFrame = hardCodedRoiMask(m_cpuFrame, 65, 610, 1440, 170, 1440, 2595, 65, 2150);
+    }
     m_frameUnprocessed.upload(m_cpuFrame);
 
     if (mode == "Raw")
@@ -306,6 +328,7 @@ cv::cuda::GpuMat BeeTracker2d::simpleColorFilter(cv::cuda::GpuMat labFrame)
 }
 
 
+
 cv::Mat BeeTracker2d::roiMask(cv::Mat input, int threshold)
 {
     cv::Mat gray;
@@ -343,6 +366,22 @@ cv::Mat BeeTracker2d::roiMask(cv::Mat input, int threshold)
     cv::Mat not_mask;
     cv::bitwise_not(mask, not_mask);
     input.setTo(140*cv::Scalar(1, 1, 1), not_mask);
+    return input;
+}
+
+cv::Mat BeeTracker2d::hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+{
+    cv::Mat mask = cv::Mat::zeros(input.rows, input.cols, CV_8U);
+    cv::Point pts[4] = {
+        cv::Point(x1, y1),
+        cv::Point(x2, y2),
+        cv::Point(x3, y3),
+        cv::Point(x4, y4),
+    };
+    cv::fillConvexPoly(mask, pts, 4, cv::Scalar(255) );
+    cv::Mat notMask;
+    cv::bitwise_not(mask, notMask);
+    input.setTo(140*cv::Scalar(1, 1, 1), notMask);
     return input;
 }
 
