@@ -11,7 +11,6 @@ def readTrajectory(filename):
         #print ifile.read()
         data = json.load(ifile)
         for entry in data:
-
             points = np.asarray(entry["Keypoints"])
             allpointsx.extend(points[:,0])
             allpointsy.extend(points[:,1])
@@ -69,20 +68,22 @@ if __name__=="__main__":
 
     videoFile = "/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4"
     vid = imageio.get_reader(videoFile, "ffmpeg")
-    plt.imshow(np.asarray(vid.get_data(1)[::-1, ::-1]))
+    plt.imshow(np.asarray(vid.get_data(10000)[::-1, ::-1]))
 
     xdata, ydata = readTrajectory("/private/tmp/test")
-    xdata = np.asarray(xdata)
-    ydata = np.asarray(ydata)
-    histogram = np.histogram2d(np.asarray(xdata), np.asarray(ydata), 1800)
+    xdata = np.asarray(xdata)[100000:150000]
+    ydata = np.asarray(ydata)[100000:150000]
+    histogram = np.histogram2d(np.asarray(xdata), np.asarray(ydata), 500)
     data = histogram[0]
     print(data)
     print (data == 0)
     #data[data<=1] = np.nan
     data = np.log(data)
     datam = ma.masked_where(np.isinf(data),data)
-    plt.pcolormesh(histogram[2], histogram[1], datam[:, :], alpha=0.5, cmap="Reds")
-    plt.colorbar()
+    plt.pcolormesh(histogram[2], histogram[1], datam[:, :], alpha=0.5, cmap="ocean")
+    #plt.colorbar()
+    plt.xticks([])
+    plt.yticks([])
     plt.show()
 
     #plt.scatter(xdata, ydata)
