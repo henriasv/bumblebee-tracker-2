@@ -40,6 +40,7 @@ private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
     cv::cuda::GpuMat simpleColorFilter(cv::cuda::GpuMat labFrame);
+    void colorFilterForFlowerDetection(cv::cuda::GpuMat labFrame);
     cv::Mat roiMask(cv::Mat input, int threshold);
     cv::Mat hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
@@ -52,6 +53,9 @@ private:
     cv::Mat m_identifierFrame;
     //cv::Mat m_outputFrame;
 
+    cv::cuda::GpuMat m_blueFlowerMask;
+    cv::cuda::GpuMat m_yellowFlowerMask;
+
     cv::cuda::GpuMat m_frameUnprocessed;
     //cv::cuda::GpuMat m_frameColorfiltered;
     cv::cuda::GpuMat m_frameProcessed;
@@ -61,6 +65,7 @@ private:
     cv::Ptr<cv::cuda::Filter> m_erodeFilter;
 
     cv::Ptr<cv::cuda::Filter> m_scharrFilter;
+    cv::Ptr<cv::cuda::CannyEdgeDetector> m_edgeDetector;
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG1;
     cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG2;

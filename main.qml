@@ -148,6 +148,12 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
+                RadioButton{
+                    id : edgeButton
+                    text : "Bounding boxes"
+                    checked : false
+                    ButtonGroup.group : imageTypeGroup
+                }
 
                 RadioButton {
                     text : "ColorFiltered"
