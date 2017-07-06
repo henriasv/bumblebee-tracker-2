@@ -9,8 +9,90 @@ StereoHandler::StereoHandler(std::shared_ptr<BeeTracker2d> camA, std::shared_ptr
     m_matcher = cv::cuda::DescriptorMatcher::createBFMatcher(camA->m_surfDetector.defaultNorm());
 }
 
-cv::Mat StereoHandler::compute()
+cv::Mat StereoHandler::compute(std::string mode)
 {
+    if (mode == "Bounding boxes")
+    {
+        std::cout << "Bounding box handling in stereo handler" << std::endl;
+        std::vector<cv::Point2f> pointsA;
+        std::vector<cv::Point2f> pointsB;
+        std::vector<cv::Point2f> newpointsA;
+        std::vector<cv::Point2f> newpointsB;
+
+        for (cv::RotatedRect rect :  m_camA->m_flowerRects[0])
+        {
+            pointsA.push_back(rect.center);
+        }
+
+        for (cv::RotatedRect rect :  m_camB->m_flowerRects[0])
+        {
+            pointsB.push_back(rect.center);
+        }
+
+        for (cv::RotatedRect rect :  m_camA->m_flowerRects[1])
+        {
+            pointsA.push_back(rect.center);
+        }
+
+        for (cv::RotatedRect rect :  m_camB->m_flowerRects[1])
+        {
+            pointsB.push_back(rect.center);
+        }
+
+        for (cv::Point2f pt : m_camA->m_arenaCorners)
+        {
+            pointsA.push_back(pt);
+        }
+
+        for (cv::Point2f pt : m_camB->m_arenaCorners)
+        {
+            pointsB.push_back(pt);
+        }
+
+        newpointsA.resize(pointsA.size());
+        newpointsB.resize(pointsB.size());
+
+        cv::Mat homography = cv::findHomography(pointsA, pointsB, CV_RANSAC);
+
+        cv::Mat fundamentalMatrix = cv::findFundamentalMat(pointsA, pointsB, CV_FM_RANSAC, 3, 0.9);
+        //std::cout << "homography: " << std::endl << homography << std::endl;
+        std::cout << fundamentalMatrix << std::endl;
+        std::vector<cv::Vec3f> lines1;
+        std::vector<cv::Vec3f> lines2;
+        cv::computeCorrespondEpilines(cv::Mat(pointsA), 1, fundamentalMatrix, lines1);
+        cv::computeCorrespondEpilines(cv::Mat(pointsB), 1, fundamentalMatrix, lines2);
+
+        for (std::vector<cv::Vec3f>::const_iterator it = lines2.begin(); it!=lines2.end(); ++it)
+           {
+            // Draw the line between first and last column
+            cv::line(m_camA->m_cpuFrame,
+                  cv::Point(0,-(*it)[2]/(*it)[1]),
+                  cv::Point(m_camA->m_cpuFrame.cols,-((*it)[2]+
+                                               (*it)[0]*m_camA->m_cpuFrame.cols)/(*it)[1]),
+                  cv::Scalar(255,255,255));
+            }
+
+        for (std::vector<cv::Vec3f>::const_iterator it = lines1.begin(); it!=lines1.end(); ++it)
+           {
+
+               cv::line(m_camB->m_cpuFrame,
+                     cv::Point(0,-(*it)[2]/(*it)[1]),
+                     cv::Point(m_camB->m_cpuFrame.cols,-((*it)[2]+
+                                                  (*it)[0]*m_camB->m_cpuFrame.cols)/(*it)[1]),
+                     cv::Scalar(255,255,255));
+               //cv::line(m_camB->m_cpuFrame,
+               //         cv::Point(0,-(*it)[2]/(*it)[1]),
+               //         cv::Point(m_camB->m_cpuFrame.cols,-((*it)[2]+
+               //                                      (*it)[0]*m_camB->m_cpuFrame.cols)/(*it)[1]),
+               //         cv::Scalar(255,255,255));
+           }
+        pointsA.clear();
+        pointsB.clear();
+        m_camA->drawFlowerBoxes();
+        m_camB->drawFlowerBoxes();
+        //cv::warpPerspective(m_camA->m_cpuFrame, m_camA->m_cpuFrame, homography, m_camA->m_cpuFrame.size());
+
+    }
 
     /*
     cv::Mat imgMatches;
@@ -22,6 +104,10 @@ cv::Mat StereoHandler::compute()
     */
 
     cv::Mat outputCpu;
+
+    cv::addWeighted(m_camA->m_cpuFrame, 0.5, m_camB->m_cpuFrame, 0.5, 0, outputCpu);
+    m_frame = outputCpu;
+    return outputCpu;
     cv::cuda::GpuMat frameA = m_camA->m_frameUnprocessed;
     //frameA.download(outputCpu);
     //return outputCpu;

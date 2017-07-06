@@ -15,7 +15,7 @@ public:
 
     cv::Ptr<cv::cuda::DescriptorMatcher> m_matcher;
 
-    cv::Mat compute();
+    cv::Mat compute(std::string mode);
 
     cv::Mat m_frame;
 };

@@ -41,6 +41,9 @@ private:
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
     cv::cuda::GpuMat simpleColorFilter(cv::cuda::GpuMat labFrame);
     void colorFilterForFlowerDetection(cv::cuda::GpuMat labFrame);
+    void drawFlowerBoxes();
+    void drawFlowerBeeMatches(cv::Mat& frame, std::vector<cv::KeyPoint> keypoints);
+    bool insideRectangle(cv::RotatedRect rect, cv::Point point);
     cv::Mat roiMask(cv::Mat input, int threshold);
     cv::Mat hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
@@ -75,6 +78,8 @@ private:
     cv::cuda::GpuMat descriptors1GPU;
     std::vector<cv::KeyPoint> keypoints;
     std::vector<float> descriptors;
+    std::vector< std::vector<cv::RotatedRect> > m_flowerRects;
+    std::vector<cv::Point2f> m_arenaCorners;
 
     bool m_flipFlag;
     int m_threshold = 125;

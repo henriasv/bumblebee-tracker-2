@@ -12,10 +12,12 @@ void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
     QString mode = strings[1];
     camA->getFrame(frameIndex, mode.toStdString());
     camB->getFrame(frameIndex, mode.toStdString());
+
     if (stereo)
     {
-        m_stereo->compute();
+        m_stereo->compute(mode.toStdString());
     }
+
     emit framesUpdated();
 }
 
