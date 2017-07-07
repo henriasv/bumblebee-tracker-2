@@ -67,7 +67,6 @@ private:
     cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
     cv::Ptr<cv::cuda::Filter> m_erodeFilter;
 
-    cv::Ptr<cv::cuda::Filter> m_scharrFilter;
     cv::Ptr<cv::cuda::CannyEdgeDetector> m_edgeDetector;
 
     cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG1;
@@ -78,7 +77,8 @@ private:
     cv::cuda::GpuMat descriptors1GPU;
     std::vector<cv::KeyPoint> keypoints;
     std::vector<float> descriptors;
-    std::vector< std::vector<cv::RotatedRect> > m_flowerRects;
+    std::vector<cv::RotatedRect> m_flowerRects;
+    std::vector<int>             m_flowerColors;
     std::vector<cv::Point2f> m_arenaCorners;
 
     bool m_flipFlag;

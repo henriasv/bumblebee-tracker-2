@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     controllerimageprovider.cpp \
     controller.cpp \
     beetracker2d.cpp \
-    stereohandler.cpp
+    stereohandler.cpp \
+    functions.cpp
 
 RESOURCES += qml.qrc \
     qmldir.qrc
@@ -42,5 +43,6 @@ HEADERS += controllerimageprovider.h \
     controllerimageprovider.h \
     controller.h \
     beetracker2d.h \
-    stereohandler.h
+    stereohandler.h \
+    functions.h
 

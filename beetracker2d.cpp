@@ -14,7 +14,6 @@ BeeTracker2d::BeeTracker2d()
 
     m_surfDetector = cv::cuda::SURF_CUDA(50, 4, 2, true, 100.0f, true);
 
-    m_scharrFilter = cv::cuda::createScharrFilter(CV_8UC1, CV_8UC1, 0, 1);
     m_edgeDetector = cv::cuda::createCannyEdgeDetector(128, 200, 5);
     cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(4, 4));
     //m_morphologyFilter = cv::cuda::createMorphologyFilter(cv::MORPH_OPEN, CV_8UC1, element, cv::Point(-1,-1),1);
@@ -34,8 +33,6 @@ BeeTracker2d::BeeTracker2d()
     m_blobParams.maxArea = 100000.0f;
     m_blobParams.minInertiaRatio = 0.05;
 
-    m_flowerRects.push_back(std::vector<cv::RotatedRect>{});
-    m_flowerRects.push_back(std::vector<cv::RotatedRect>{});
     //params.minThreshold = 0;
     //params.maxThreshold = 130;
     //params.minConvexity = 0.3;
@@ -66,10 +63,7 @@ struct less_than_key
 {
     inline bool operator() (const cv::RotatedRect& struct1, const cv::RotatedRect& struct2)
     {
-        if (fabs(struct1.center.x-struct2.center.x) > 20)
             return (struct1.center.x < struct2.center.x);
-        else
-            return (struct1.center.y < struct2.center.y);
     }
 };
 
@@ -146,9 +140,10 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
         cannyMats.push_back(cannyMatYellow);
 
         int counter = 0;
+        m_flowerRects.clear();
+        m_flowerColors.clear();
         for (auto cannyMat : cannyMats)
         {
-            m_flowerRects[counter].clear();
             std::vector< std::vector< cv::Point> > contours;
             cv::Mat cpuCannyMat;
             cannyMat.download(cpuCannyMat);
@@ -158,11 +153,14 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
                 cv::RotatedRect rotatedRect;
                 rotatedRect = cv::minAreaRect(contours[i]);
                 if (rotatedRect.size.area() > 100)
-                    m_flowerRects[counter].push_back(rotatedRect);
+                {
+                    m_flowerRects.push_back(rotatedRect);
+                    m_flowerColors.push_back(counter);
+                }
 
             }
-            // Because of camera orientation, flowers will be sorted on x coordinate. Wrong sortings will be correced using RANSAC in the stereo handler
-            std::sort(m_flowerRects[counter].begin(), m_flowerRects[counter].end(), less_than_key());
+            // Because of camera orientation, flowers will be sorted on x coordinate. Wrong sortings will be correced using RANSAC and homography in the stereo handler
+            //std::sort(m_flowerRects[counter].begin(), m_flowerRects[counter].end(), less_than_key());
             counter ++;
         }
         //drawFlowerBoxes();
@@ -375,22 +373,19 @@ void BeeTracker2d::drawFlowerBoxes()
     cv::Mat frame = m_cpuFrame;
     for (int i = 0; i<m_flowerRects.size(); i++)
     {
-        for (int j = 0; j<m_flowerRects[i].size(); j++)
-        {
             cv::Point2f points[4];
-            m_flowerRects[i][j].points(points);
+            m_flowerRects[i].points(points);
             std::vector< std::vector< cv::Point> > polylines;
             polylines.resize(1);
             for(int k = 0; k < 4; ++k)
             {
                 polylines[0].push_back(points[k]);
             }
-            if (i == 0)
+            if (m_flowerColors[i] == 0)
                 cv::polylines(frame, polylines, true, cv::Scalar(0, 0, 255), 2);
-            else if (i == 1)
+            else if (m_flowerColors[i] == 1)
                 cv::polylines(frame, polylines, true, cv::Scalar(255, 255, 0), 2);
-            cv::putText(frame, std::to_string(j), m_flowerRects[i][j].center, 1, 5, cv::Scalar(0,0,0), 2);
-        }
+            cv::putText(frame, std::to_string(i), m_flowerRects[i].center, 1, 5, cv::Scalar(0,0,0), 2);
     }
 }
 
@@ -398,14 +393,12 @@ void BeeTracker2d::drawFlowerBeeMatches(cv::Mat &frame, std::vector<cv::KeyPoint
 {
     for (int i = 0; i<m_flowerRects.size(); i++)
     {
-        for (int j = 0; j<m_flowerRects[i].size(); j++)
-        {
            for (cv::KeyPoint keypoint : keypoints)
            {
-               if (insideRectangle(m_flowerRects[i][j], keypoint.pt))
+               if (insideRectangle(m_flowerRects[i], keypoint.pt))
                {
                    cv::Point2f points[4];
-                   m_flowerRects[i][j].points(points);
+                   m_flowerRects[i].points(points);
                    std::vector< std::vector< cv::Point> > polylines;
                    polylines.resize(1);
                    for (int k = 0; k<4; ++k)
@@ -416,7 +409,6 @@ void BeeTracker2d::drawFlowerBeeMatches(cv::Mat &frame, std::vector<cv::KeyPoint
                    std::cout << "Bee over flower" << std::endl;
                }
            }
-        }
     }
     //cv::rectangle(frame, )
 }

@@ -3,6 +3,8 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/cudastereo.hpp>
 #include <iostream>
+#include <functions.h>
+
 StereoHandler::StereoHandler(std::shared_ptr<BeeTracker2d> camA, std::shared_ptr<BeeTracker2d> camB)
     : m_camA(camA), m_camB(camB)
 {
@@ -16,52 +18,75 @@ cv::Mat StereoHandler::compute(std::string mode)
         std::cout << "Bounding box handling in stereo handler" << std::endl;
         std::vector<cv::Point2f> pointsA;
         std::vector<cv::Point2f> pointsB;
-        std::vector<cv::Point2f> newpointsA;
-        std::vector<cv::Point2f> newpointsB;
+        std::vector<cv::Point2f> homographyPointsA;
+        std::vector<cv::Point2f> homographyPointsB;
 
-        for (cv::RotatedRect rect :  m_camA->m_flowerRects[0])
+
+        for (cv::RotatedRect rect :  m_camA->m_flowerRects)
         {
-            pointsA.push_back(rect.center);
+            homographyPointsA.push_back(rect.center);
         }
 
-        for (cv::RotatedRect rect :  m_camB->m_flowerRects[0])
+        for (cv::RotatedRect rect :  m_camB->m_flowerRects)
         {
-            pointsB.push_back(rect.center);
+            homographyPointsB.push_back(rect.center);
         }
 
-        for (cv::RotatedRect rect :  m_camA->m_flowerRects[1])
-        {
-            pointsA.push_back(rect.center);
-        }
 
-        for (cv::RotatedRect rect :  m_camB->m_flowerRects[1])
-        {
-            pointsB.push_back(rect.center);
-        }
+        // bonus points
+        pointsA.push_back(cv::Point2f(980.000000, 1176.000000));
+        pointsA.push_back(cv::Point2f(704.000000, 630.000000));
+        pointsA.push_back(cv::Point2f(791.000000, 2152.000000));
+        pointsA.push_back(cv::Point2f(716.000000, 2060.000000));
+        pointsA.push_back(cv::Point2f(72.000000, 2623.000000));
+        pointsA.push_back(cv::Point2f(74.000000, 112.000000));
+        pointsA.push_back(cv::Point2f(178.000000, 129.000000));
+        pointsA.push_back(cv::Point2f(1475.000000, 550.000000));
+        pointsA.push_back(cv::Point2f(1471.000000, 2123.000000));
+        pointsA.push_back(cv::Point2f(628.000000, 158.000000));
+        pointsA.push_back(cv::Point2f(662.000000, 295.000000));
+        pointsA.push_back(cv::Point2f(1121.000000, 448.000000));
+        pointsA.push_back(cv::Point2f(94.000000, 2204.000000));
+        pointsA.push_back(cv::Point2f(1135.000000, 1981.000000));
+        pointsA.push_back(cv::Point2f(320.000000, 1355.000000));
+        pointsA.push_back(cv::Point2f(792.000000, 2508.000000));
+        pointsA.push_back(cv::Point2f(48.000000, 41.000000));
+        pointsA.push_back(cv::Point2f(1373.000000, 2110.000000));
+        pointsA.push_back(cv::Point2f(48.000000, 1331.000000));
+        pointsA.push_back(cv::Point2f(1476.000000, 1342.000000));
+        pointsB.push_back(cv::Point2f(1092.000000, 1176.000000));
+        pointsB.push_back(cv::Point2f(802.000000, 664.000000));
+        pointsB.push_back(cv::Point2f(725.000000, 2169.000000));
+        pointsB.push_back(cv::Point2f(819.000000, 2081.000000));
+        pointsB.push_back(cv::Point2f(70.000000, 2164.000000));
+        pointsB.push_back(cv::Point2f(63.000000, 621.000000));
+        pointsB.push_back(cv::Point2f(121.000000, 588.000000));
+        pointsB.push_back(cv::Point2f(1481.000000, 112.000000));
+        pointsB.push_back(cv::Point2f(1458.000000, 2621.000000));
+        pointsB.push_back(cv::Point2f(640.000000, 287.000000));
+        pointsB.push_back(cv::Point2f(394.000000, 500.000000));
+        pointsB.push_back(cv::Point2f(848.000000, 351.000000));
+        pointsB.push_back(cv::Point2f(377.000000, 1980.000000));
+        pointsB.push_back(cv::Point2f(1347.000000, 2226.000000));
+        pointsB.push_back(cv::Point2f(473.000000, 1384.000000));
+        pointsB.push_back(cv::Point2f(634.000000, 2482.000000));
+        pointsB.push_back(cv::Point2f(202.000000, 522.000000));
+        pointsB.push_back(cv::Point2f(1317.000000, 2502.000000));
+        pointsB.push_back(cv::Point2f(59.000000, 1380.000000));
+        pointsB.push_back(cv::Point2f(1478.000000, 1384.000000));
 
-        for (cv::Point2f pt : m_camA->m_arenaCorners)
-        {
-            pointsA.push_back(pt);
-        }
 
-        for (cv::Point2f pt : m_camB->m_arenaCorners)
-        {
-            pointsB.push_back(pt);
-        }
+        cv::Mat homography = cv::findHomography(homographyPointsA, homographyPointsB, CV_RANSAC);
 
-        newpointsA.resize(pointsA.size());
-        newpointsB.resize(pointsB.size());
-
-        cv::Mat homography = cv::findHomography(pointsA, pointsB, CV_RANSAC);
-
-        cv::Mat fundamentalMatrix = cv::findFundamentalMat(pointsA, pointsB, CV_FM_RANSAC, 3, 0.9);
+        cv::Mat fundamentalMatrix = cv::findFundamentalMat(pointsA, pointsB, CV_FM_8POINT, 3, 0.9);
         //std::cout << "homography: " << std::endl << homography << std::endl;
         std::cout << fundamentalMatrix << std::endl;
         std::vector<cv::Vec3f> lines1;
         std::vector<cv::Vec3f> lines2;
         cv::computeCorrespondEpilines(cv::Mat(pointsA), 1, fundamentalMatrix, lines1);
-        cv::computeCorrespondEpilines(cv::Mat(pointsB), 1, fundamentalMatrix, lines2);
+        cv::computeCorrespondEpilines(cv::Mat(pointsB), 2, fundamentalMatrix, lines2);
 
+        int counter = 0;
         for (std::vector<cv::Vec3f>::const_iterator it = lines2.begin(); it!=lines2.end(); ++it)
            {
             // Draw the line between first and last column
@@ -70,8 +95,11 @@ cv::Mat StereoHandler::compute(std::string mode)
                   cv::Point(m_camA->m_cpuFrame.cols,-((*it)[2]+
                                                (*it)[0]*m_camA->m_cpuFrame.cols)/(*it)[1]),
                   cv::Scalar(255,255,255));
+            cv::circle(m_camA->m_cpuFrame, pointsA[counter], 5, cv::Scalar(255, 0, 0));
+            counter ++;
             }
 
+        counter = 0;
         for (std::vector<cv::Vec3f>::const_iterator it = lines1.begin(); it!=lines1.end(); ++it)
            {
 
@@ -80,50 +108,24 @@ cv::Mat StereoHandler::compute(std::string mode)
                      cv::Point(m_camB->m_cpuFrame.cols,-((*it)[2]+
                                                   (*it)[0]*m_camB->m_cpuFrame.cols)/(*it)[1]),
                      cv::Scalar(255,255,255));
-               //cv::line(m_camB->m_cpuFrame,
-               //         cv::Point(0,-(*it)[2]/(*it)[1]),
-               //         cv::Point(m_camB->m_cpuFrame.cols,-((*it)[2]+
-               //                                      (*it)[0]*m_camB->m_cpuFrame.cols)/(*it)[1]),
-               //         cv::Scalar(255,255,255));
+               cv::circle(m_camB->m_cpuFrame, pointsB[counter], 5, cv::Scalar(255, 0, 0));
+               counter ++;
+
            }
         pointsA.clear();
         pointsB.clear();
+
+        sortFlowersAndGroupByClosenessAndColor(m_camA->m_flowerRects, m_camA->m_flowerColors, m_camB->m_flowerRects, m_camB->m_flowerColors, homography);
+
         m_camA->drawFlowerBoxes();
         m_camB->drawFlowerBoxes();
         //cv::warpPerspective(m_camA->m_cpuFrame, m_camA->m_cpuFrame, homography, m_camA->m_cpuFrame.size());
 
     }
 
-    /*
-    cv::Mat imgMatches;
-    std::vector<cv::DMatch> matches;
-    m_matcher->match(m_camA->descriptors1GPU, m_camB->descriptors1GPU, matches);
-    drawMatches(m_camA->m_cpuFrame, m_camA->keypoints, m_camB->m_cpuFrame, m_camB->keypoints, matches, imgMatches);
-    m_frame = imgMatches;
-    //return imgMatches;
-    */
-
     cv::Mat outputCpu;
 
     cv::addWeighted(m_camA->m_cpuFrame, 0.5, m_camB->m_cpuFrame, 0.5, 0, outputCpu);
-    m_frame = outputCpu;
-    return outputCpu;
-    cv::cuda::GpuMat frameA = m_camA->m_frameUnprocessed;
-    //frameA.download(outputCpu);
-    //return outputCpu;
-    cv::cuda::GpuMat frameB = m_camB->m_frameUnprocessed;
-    cv::cuda::cvtColor(frameA, frameA, CV_BGR2GRAY);
-    cv::cuda::cvtColor(frameB, frameB, CV_BGR2GRAY);
-    //cv::Ptr<cv::cuda::StereoConstantSpaceBP> stereo = cv::cuda::createStereoConstantSpaceBP (16, 8, 4, 4, CV_32F);
-    cv::Ptr<cv::cuda::StereoBM> stereo = cv::cuda::createStereoBM (128, 21);
-    //cv::Ptr<cv::cuda::StereoBeliefPropagation> stereo = cv::cuda::createStereoBeliefPropagation(16, 5, 2, CV_32F);
-    cv::cuda::GpuMat output;
-    stereo->compute(frameB, frameA, output);
-    cv::cuda::GpuMat output8u;
-    output.convertTo(output8u, CV_8U);
-    std::cout << output8u.depth() << std::endl;
-    cv::cuda::cvtColor(output8u, output, CV_GRAY2BGR);
-    output.download(outputCpu);
     m_frame = outputCpu;
     return outputCpu;
 }
