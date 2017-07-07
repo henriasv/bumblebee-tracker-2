@@ -51,6 +51,8 @@ void Controller::appendKeypointsToFile()
         hasWrittenFrame = true;
     }
     m_jsonFile << camA->getDumpString().toStdString();
+    //m_jsonFile << ",\n";
+    //m_jsonFile << camB->getDumpString().toStdString();
 }
 
 Controller::Controller(QObject *parent) : QObject(parent)

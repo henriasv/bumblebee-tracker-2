@@ -61,6 +61,7 @@ ApplicationWindow {
 
     function saveTrajectories(url) {
         controller.initializeJsonFile(url)
+
         for (var i = saveTrajectoriesSlider.first.value; i < saveTrajectoriesSlider.second.value; i++) {
             playButton.checked = false
             //timeStepSlider.value = parseInt(i)
