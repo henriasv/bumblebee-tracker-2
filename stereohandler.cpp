@@ -22,6 +22,7 @@ cv::Mat StereoHandler::compute(std::string mode)
         std::vector<cv::Point2f> homographyPointsB;
 
 
+
         for (cv::RotatedRect rect :  m_camA->m_flowerRects)
         {
             homographyPointsA.push_back(rect.center);
@@ -31,6 +32,9 @@ cv::Mat StereoHandler::compute(std::string mode)
         {
             homographyPointsB.push_back(rect.center);
         }
+
+        std::cout << "Length of rectA: " << homographyPointsA.size();
+        std::cout << "Length of rectB: " << homographyPointsB.size();
 
 
         // bonus points
@@ -75,6 +79,10 @@ cv::Mat StereoHandler::compute(std::string mode)
         pointsB.push_back(cv::Point2f(59.000000, 1380.000000));
         pointsB.push_back(cv::Point2f(1478.000000, 1384.000000));
 
+
+        int len = (homographyPointsA.size()<homographyPointsB.size() ? homographyPointsA.size() : homographyPointsB.size());
+        homographyPointsA.resize(len);
+        homographyPointsB.resize(len);
 
         cv::Mat homography = cv::findHomography(homographyPointsA, homographyPointsB, CV_RANSAC);
 

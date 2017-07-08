@@ -30,15 +30,37 @@ frameA = cv2.flip(frameA, -1)
 frameA = cv2.imread("frameA.jpg")
 frameB = cv2.imread("frameB.jpg")
 
+"""
+orb = cv2.ORB_create()
+fast = cv2.FastFeatureDetector_create()
+brisk = cv2.BRISK_create()
+
+kpA, desA = orb.detectAndCompute(frameA,None)
+kpB, desB = orb.detectAndCompute(frameB,None)
+
+imgFeaturesA = cv2.drawKeypoints(frameA, kpA, frameA, color=(255,0,0))
+imgFeaturesB = cv2.drawKeypoints(frameB, kpB, frameB, color=(255,0,0))
+
+FLANN_INDEX_KDTREE = 0
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+search_params = dict(checks=50)
+
+flann = cv2.FlannBasedMatcher(index_params,search_params)
+matches = flann.knnMatch(desA,desB,k=2)
+
+matchFrame = cv2.drawMatches(frameA, kpA, frameB, kpB, matches, frameA)
+cv2.imwrite("matches.jpg", matchFrame)
+"""
 # Pixel values
-pixelsA = [[ 980., 1176.], [704, 630], [791, 2152], [716, 2060], [72, 2623], [74, 112], [178, 129], [1475, 550], [1471, 2123], [628, 158], [662, 295], [1121, 448], [94, 2204], [1135, 1981]]
-pixelsB = [[1092., 1176.], [802, 664], [725, 2169], [819, 2081], [70, 2164], [63, 621], [121, 588], [1481, 112], [1458, 2621], [640, 287], [394, 500], [848, 351], [377, 1980], [1347, 2226]]
+#pixelsA = [[ 980., 1176.], [704, 630], [791, 2152], [716, 2060], [72, 2623], [74, 112], [178, 129], [1475, 550], [1471, 2123], [628, 158], [662, 295], [1121, 448], [94, 2204], [1135, 1981]]
+#pixelsB = [[1092., 1176.], [802, 664], [725, 2169], [819, 2081], [70, 2164], [63, 621], [121, 588], [1481, 112], [1458, 2621], [640, 287], [394, 500], [848, 351], [377, 1980], [1347, 2226]]
+execfile("correspondingPixelValues.py")
 pixelsA = np.asarray(pixelsA)
 pixelsB = np.asarray(pixelsB)
 pixelsA = np.int32(pixelsA)
 pixelsB = np.int32(pixelsB)
-print pixelsA
-print pixelsB
+print (pixelsA)
+print (pixelsB)
 
 for pixelA, pixelB in zip(pixelsA, pixelsB):
 	cv2.circle(frameA, (int(pixelA[0]), int(pixelA[1])), 5, (255, 0, 0), 3)
@@ -46,7 +68,7 @@ for pixelA, pixelB in zip(pixelsA, pixelsB):
 
 
 fundamentalMat = cv2.findFundamentalMat(pixelsA, pixelsB, cv2.FM_8POINT)[0]
-print fundamentalMat
+print (fundamentalMat)
 
 epilines = cv2.computeCorrespondEpilines(pixelsB, 2, fundamentalMat)
 epilines = epilines.reshape(-1, 3)
@@ -61,6 +83,9 @@ cv2.imwrite("frameAWithIndications.jpg", frameA)
 cv2.imwrite("frameBWithIndications.jpg", frameB)
 cv2.imwrite("epilinesA.jpg", img1)
 cv2.imwrite("epilinesB.jpg", img2)
+
+vis = np.concatenate((img1, img2), axis=1)
+cv2.imwrite("epilines.jpg", vis)
 
 #cv2.imshow("frameA", frame1)
 #cv2.imshow("frameB", frame2)

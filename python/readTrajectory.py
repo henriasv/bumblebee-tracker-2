@@ -70,7 +70,7 @@ if __name__=="__main__":
     vid = imageio.get_reader(videoFile, "ffmpeg")
     plt.imshow(np.asarray(vid.get_data(10000)[::-1, ::-1]))
 
-    xdata, ydata = readTrajectory("/private/tmp/test")
+    xdata, ydata = readTrajectory("testtraj.json")
     xdata = np.asarray(xdata)[100000:150000]
     ydata = np.asarray(ydata)[100000:150000]
     histogram = np.histogram2d(np.asarray(xdata), np.asarray(ydata), 500)

@@ -21,7 +21,7 @@ class BeeTracker2d
 {
     friend class StereoHandler;
 public:
-    BeeTracker2d();
+    BeeTracker2d(QString camName);
     cv::VideoCapture m_cam;
     void load(std::string filename, bool flipFlag);
     void getFrame(int frameIndex, std::string mode);
@@ -36,10 +36,10 @@ public:
     void setMaxFrame(int maxFrame);
     cv::Mat m_cpuFrame;
     cv::Mat m_gray;
+    QString m_camName;
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
-    cv::cuda::GpuMat simpleColorFilter(cv::cuda::GpuMat labFrame);
     void colorFilterForFlowerDetection(cv::cuda::GpuMat labFrame);
     void drawFlowerBoxes();
     void drawFlowerBeeMatches(cv::Mat& frame, std::vector<cv::KeyPoint> keypoints);
@@ -66,6 +66,7 @@ private:
     cv::Ptr<cv::cuda::Filter> m_gaussianFilter;
     cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
     cv::Ptr<cv::cuda::Filter> m_erodeFilter;
+    cv::Ptr<cv::cuda::Filter> m_flowerDilateFilter;
 
     cv::Ptr<cv::cuda::CannyEdgeDetector> m_edgeDetector;
 
@@ -80,6 +81,7 @@ private:
     std::vector<cv::RotatedRect> m_flowerRects;
     std::vector<int>             m_flowerColors;
     std::vector<cv::Point2f> m_arenaCorners;
+    std::vector<int> m_beesOnFlower;
 
     bool m_flipFlag;
     int m_threshold = 125;

@@ -12,6 +12,45 @@ struct less_than_key
     }
 };
 
+void averageFlowerRectangleCoordinates(std::vector<cv::RotatedRect>& rectsA, std::vector<cv::RotatedRect>& rectsB, cv::Mat homography)
+{
+    if (rectsA.size() != rectsB.size())
+    {
+        std::cout << "Rectangle vectors of different lengths for different cameras. This means the number of identified flowers from each camera are different. This is BAD!" << std::endl;
+        return;
+    }
+    std::vector<cv::RotatedRect> rectsATransformed;
+    rectsATransformed.resize(rectsA.size());
+    //cv::perspectiveTransform(rectsA, rectsATransformed, homography);
+    /*
+    for (int i = 0; i<rectsA.size(); i++)
+    {
+        // iterate rectangle corners
+        cv::Point2f ptsA[4];
+        cv::Point2f ptsB[4];
+        rectsA[i].points(ptsA);
+        rectsB[i].points(ptsB);
+
+        std::vector<cv::Point2f> pointsA;
+        std::vector<cv::Point2f> pointsATransformed;
+
+
+        for (int j = 0; j<4; j++)
+        {
+            pointsA.push_back(ptsA[j]);
+        }
+        cv::Size2f size = rectsA[i].size();
+        cv::Point2f center = rectsA[i].center();
+        double angle = rects[i].
+
+
+        rectsA[i] = cv::RotatedRect(pointsA[0], pointsA[1], pointsA[2]);
+        cv::perspectiveTransform(pointsA, pointsATransformed, homography);
+    }
+*/
+
+}
+
 void sortMinimumDistanceInChain(std::vector<cv::RotatedRect>& rects, std::vector<int>& flowerColors)
 {
     std::vector<int> index(rects.size(), 0);
@@ -35,16 +74,12 @@ void sortMinimumDistanceInChain(std::vector<cv::RotatedRect>& rects, std::vector
                 double dist2 = db.dot(db);
                 return (dist1 < dist2);
             });
-        for (auto v : index)
-            std::cout << v << " ";
-        std::cout << std::endl;
     }
 
     std::vector<cv::RotatedRect> outRects;
     std::vector<int> outFlowerColors;
     for (int i = 0; i<rects.size(); i++)
     {
-        std::cout << "Pushing rectangle " << i << " to " << index[i] << std::endl;
         outRects.push_back(rects[index[i]]);
         outFlowerColors.push_back(flowerColors[index[i]]);
     }
@@ -72,7 +107,9 @@ void matchingRectanglesByHomography(std::vector<cv::RotatedRect> rectsA, std::ve
         index[i] = i;
     }
 
-    for (int i = 0; i<centersA.size(); i++)
+    int len = (rectsA.size()<rectsB.size() ? rectsA.size() : rectsB.size());
+
+    for (int i = 0; i<len; i++)
     {
         sort(index.begin()+i, index.end(),
             [&](const int& a, const int& b)
@@ -110,5 +147,6 @@ void sortFlowersAndGroupByClosenessAndColor(
 
     sortMinimumDistanceInChain(flowerRectsA, flowerColorsA);
     matchingRectanglesByHomography(flowerRectsA, flowerRectsB, flowerColorsB, homography);
+    averageFlowerRectangleCoordinates(flowerRectsA, flowerRectsB, homography);
     return;
 }

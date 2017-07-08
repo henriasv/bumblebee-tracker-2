@@ -51,8 +51,8 @@ void Controller::appendKeypointsToFile()
         hasWrittenFrame = true;
     }
     m_jsonFile << camA->getDumpString().toStdString();
-    //m_jsonFile << ",\n";
-    //m_jsonFile << camB->getDumpString().toStdString();
+    m_jsonFile << ",\n";
+    m_jsonFile << camB->getDumpString().toStdString();
 }
 
 Controller::Controller(QObject *parent) : QObject(parent)
@@ -61,14 +61,14 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_frameMin = 0;
     m_imageProvider = new ControllerImageProvider;
     m_imageProvider->setController(this);
-    camA = std::make_shared<BeeTracker2d>();
-    camB = std::make_shared<BeeTracker2d>();
-    //camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
-    //camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
+    camA = std::make_shared<BeeTracker2d>("A");
+    camB = std::make_shared<BeeTracker2d>("B");
+    camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
+    camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
     //camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
     //camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
-    camA->load("/home/henriasv/testvideo/GOPR0018.mp4", true);
-    camB->load("/home/henriasv/testvideo/GOPR0039.mp4", false);
+    //camA->load("/home/henriasv/testvideo/GOPR0018.mp4", true);
+    //camB->load("/home/henriasv/testvideo/GOPR0039.mp4", false);
 
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
     setFrameMax(camB->getMaxFrame());

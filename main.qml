@@ -62,7 +62,7 @@ ApplicationWindow {
     function saveTrajectories(url) {
         controller.initializeJsonFile(url)
 
-        for (var i = saveTrajectoriesSlider.first.value; i < saveTrajectoriesSlider.second.value; i++) {
+        for (var i = parseInt(saveTrajectoriesFirst.text); i < parseInt(saveTrajectoriesLast.text); i++) {
             playButton.checked = false
             //timeStepSlider.value = parseInt(i)
             controller.requestFrameUpdate(i+"/"+imageTypeGroup.checkedButton.text, parseInt(thresholdField.text), stereoButton.checked);
@@ -77,13 +77,22 @@ ApplicationWindow {
             standardButtons: StandardButton.Save | StandardButton.Cancel
             onAccepted: saveTrajectories(saveFileDialog.fileUrl), visible = false
             ColumnLayout {
-                RangeSlider{
-                    id : saveTrajectoriesSlider
-                    from : 0
-                    to : controller.frameMax
-                    first.value : 100
-                    second.value : 120
+                TextField {
+                    id : saveTrajectoriesFirst
+                    text : "100"
                 }
+                TextField {
+                    id : saveTrajectoriesLast
+                    text : "120"
+                }
+
+                //RangeSlider{
+                //    id : saveTrajectoriesSlider
+                //    from : 0
+                //    to : controller.frameMax
+                //    first.value : 100
+                //    second.value : 120
+                //}
             }
         }
 
