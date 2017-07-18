@@ -74,8 +74,12 @@ struct less_than_key
 
 void BeeTracker2d::getFrame(int frameIndex, std::string mode)
 {
+    if (!m_cam.isOpened())
+        return;
+
     if (m_previousFrame+1 != frameIndex)
     {
+        std::cout << "Setting VideoReader position to "<< frameIndex << std::endl;
         m_cam.set(CV_CAP_PROP_POS_FRAMES, frameIndex);
     }
 
@@ -103,20 +107,7 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
         cv::flip(m_cpuFrame, m_cpuFrame, -1);
     }
 
-    //m_frameUnprocessed.upload(m_cpuFrame);
-
-
-
-
-    //m_cpuFrame = roiMask(m_cpuFrame, 130);
-    if (m_flipFlag)
-    {
-        m_cpuFrame = hardCodedRoiMask(m_cpuFrame, 55, 100, 1460, 580, 1460, 2120, 65, 2595);
-    }
-    else
-    {
-        m_cpuFrame = hardCodedRoiMask(m_cpuFrame, 65, 610, 1440, 170, 1440, 2595, 65, 2150);
-    }
+    m_cpuFrame = hardCodedRoiMask(m_cpuFrame);
     m_frameUnprocessed.upload(m_cpuFrame);
 
     if (mode == "Raw")
@@ -189,7 +180,7 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
         cv::cvtColor(m_cpuFrame, m_cpuFrame, CV_BGR2RGB);
 
         cv::Ptr<cv::SimpleBlobDetector> blob_detector = cv::SimpleBlobDetector::create(m_blobParams);
-
+        keypoints.clear();
         blob_detector->detect(m_binaryFrame, keypoints);
         for (cv::KeyPoint blob : keypoints)
         {
@@ -231,11 +222,14 @@ QString BeeTracker2d::getDumpString()
     QString outString;
     QTextStream out(&outString);
     out << "{ \"Frame\" : " << m_previousFrame << ",\n \"Cam\" : \""<< m_camName << "\",\n \"Keypoints\" : [";
-    for (int i = 0; i<keypoints.size()-1; i++)
+    if (!keypoints.empty())
     {
-        out <<" [ " << keypoints[i].pt.x << ", " << keypoints[i].pt.y << " ], \n";
+        for (int i = 0; i<keypoints.size()-1; i++)
+        {
+            out <<" [ " << keypoints[i].pt.x << ", " << keypoints[i].pt.y << " ], \n";
+        }
+        out <<" [ " << keypoints[keypoints.size()-1].pt.x << ", " << keypoints[keypoints.size()-1].pt.y << " ] \n";
     }
-    out <<" [ " << keypoints[keypoints.size()-1].pt.x << ", " << keypoints[keypoints.size()-1].pt.y << " ] \n";
     out <<" ], \n \"FlowerBeeStatus\" : [";
     for (int i = 0; i<m_beesOnFlower.size()-1; i++)
     {
@@ -243,7 +237,6 @@ QString BeeTracker2d::getDumpString()
     }
     out << m_beesOnFlower[m_beesOnFlower.size()-1] << "\n";
     out << "] \n }";
-    //QDebug() << outString;
     return outString;
 }
 
@@ -361,14 +354,14 @@ void BeeTracker2d::colorFilterForFlowerDetection(cv::cuda::GpuMat labMat)
     cv::cuda::bitwise_and(maskBlueRefine, m_blueFlowerMask, m_blueFlowerMask);
 
     cv::cuda::threshold(channelsLab[0], maskLight, 150, 255, cv::THRESH_BINARY);
-    cv::cuda::threshold(channelsLab[2], m_yellowFlowerMask, 135, 255, cv::THRESH_BINARY);
-    cv::cuda::threshold(channelsLab[1], maskNotGreen, 100, 255, cv::THRESH_BINARY);
+    cv::cuda::threshold(channelsLab[2], m_yellowFlowerMask, 145, 255, cv::THRESH_BINARY);
+    cv::cuda::threshold(channelsLab[1], maskNotGreen, 105, 255, cv::THRESH_BINARY);
     cv::cuda::bitwise_and(m_yellowFlowerMask, maskNotGreen, m_yellowFlowerMask);
     cv::cuda::bitwise_and(m_yellowFlowerMask, maskLight, m_yellowFlowerMask);
 
     m_flowerDilateFilter->apply(m_yellowFlowerMask, m_yellowFlowerMask);
     m_flowerDilateFilter->apply(m_blueFlowerMask, m_blueFlowerMask);
-    //m_blueFlowerMask.download(m_cpuFrame);
+    //m_yellowFlowerMask.download(m_cpuFrame);
     //cv::imshow("frame", m_cpuFrame);
     //cv::waitKey(0);
 }
@@ -479,14 +472,14 @@ cv::Mat BeeTracker2d::roiMask(cv::Mat input, int threshold)
     return input;
 }
 
-cv::Mat BeeTracker2d::hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+cv::Mat BeeTracker2d::hardCodedRoiMask(cv::Mat input)
 {
     cv::Mat mask = cv::Mat::zeros(input.rows, input.cols, CV_8U);
     cv::Point pts[4] = {
-        cv::Point(x1, y1),
-        cv::Point(x2, y2),
-        cv::Point(x3, y3),
-        cv::Point(x4, y4),
+        cv::Point(m_roiMaskVector[0], m_roiMaskVector[1]),
+        cv::Point(m_roiMaskVector[2], m_roiMaskVector[3]),
+        cv::Point(m_roiMaskVector[4], m_roiMaskVector[5]),
+        cv::Point(m_roiMaskVector[6], m_roiMaskVector[7]),
     };
     m_arenaCorners.clear();
     for (int i = 0; i<4; i++)
@@ -518,4 +511,14 @@ int BeeTracker2d::getThreshold() const
 void BeeTracker2d::setThreshold(int threshold)
 {
     m_threshold = threshold;
+}
+
+void BeeTracker2d::setRoiMaskVector(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+{
+    m_roiMaskVector[0] = x1; m_roiMaskVector[1] = y1; m_roiMaskVector[2] = x2, m_roiMaskVector[3] = y2; m_roiMaskVector[4] = x3; m_roiMaskVector[5] = y3; m_roiMaskVector[6] = x4; m_roiMaskVector[7] = y4;
+}
+
+void BeeTracker2d::setRoiMaskVector(std::vector<int> inVec)
+{
+    m_roiMaskVector = inVec;
 }

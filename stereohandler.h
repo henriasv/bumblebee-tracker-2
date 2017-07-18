@@ -13,8 +13,6 @@ public:
     std::shared_ptr<BeeTracker2d> m_camA;
     std::shared_ptr<BeeTracker2d> m_camB;
 
-    cv::Ptr<cv::cuda::DescriptorMatcher> m_matcher;
-
     cv::Mat compute(std::string mode);
 
     cv::Mat m_frame;

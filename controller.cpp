@@ -1,6 +1,41 @@
 #include "controller.h"
 #include <QDebug>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <utility>
 
+void Controller::loadJsonMetadataFile(QUrl filename)
+{
+    boost::property_tree::ptree root;
+    boost::property_tree::read_json(filename.toLocalFile().toStdString(), root);
+    std::string pathA(root.get<std::string>("fileData.pathA"));
+    std::string pathB(root.get<std::string>("fileData.pathB"));
+    std::cout << "Path A read by controller from file: " << pathA << std::endl;
+    std::cout << "Path B read by controller from file: " << pathB << std::endl;
+    camA->load(pathA, true);
+    camB->load(pathB, false);
+
+    std::vector<int> cornersA;
+    std::vector<int> cornersB;
+
+
+    boost::property_tree::ptree arenaData = root.get_child("arenaData");
+
+
+    for (boost::property_tree::ptree::value_type& row : arenaData.get_child("cornerPixelsA"))
+        for (boost::property_tree::ptree::value_type & value : row.second)
+            cornersA.push_back(value.second.get_value<int>());
+    for (boost::property_tree::ptree::value_type& row : arenaData.get_child("cornerPixelsB"))
+        for (boost::property_tree::ptree::value_type & value : row.second)
+            cornersB.push_back(value.second.get_value<int>());
+
+    camA->setRoiMaskVector(cornersA);
+    camB->setRoiMaskVector(cornersB);
+
+
+
+
+}
 
 void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
 {
@@ -31,6 +66,10 @@ void Controller::setParameters(int window1, int window2, int minimumArea, int ma
 void Controller::initializeJsonFile(QUrl filename)
 {
     m_jsonFile.open(filename.toLocalFile().toStdString(), std::ofstream::out);
+    if (!m_jsonFile.is_open())
+    {
+        qDebug() << "Could not open json file in Controller";
+    }
     m_jsonFile << "[\n";
 }
 
@@ -63,20 +102,22 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_imageProvider->setController(this);
     camA = std::make_shared<BeeTracker2d>("A");
     camB = std::make_shared<BeeTracker2d>("B");
-    camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
-    camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
+    //camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
+    //camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
     //camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
     //camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
     //camA->load("/home/henriasv/testvideo/GOPR0018.mp4", true);
     //camB->load("/home/henriasv/testvideo/GOPR0039.mp4", false);
+    //camA->load("/home/henriasv/testvideo/test_concat/A/concat.mp4", true);
+    //camB->load("/home/henriasv/testvideo/test_concat/B/concat.mp4", false);
 
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
-    setFrameMax(camB->getMaxFrame());
+
 }
 
 QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mode)
 {
-
+    setFrameMax(camB->getMaxFrame());
     if (cam == QString("A"))
     {
         cv::Mat frame = camA->m_cpuFrame;

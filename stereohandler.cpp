@@ -8,7 +8,6 @@
 StereoHandler::StereoHandler(std::shared_ptr<BeeTracker2d> camA, std::shared_ptr<BeeTracker2d> camB)
     : m_camA(camA), m_camB(camB)
 {
-    m_matcher = cv::cuda::DescriptorMatcher::createBFMatcher(camA->m_surfDetector.defaultNorm());
 }
 
 cv::Mat StereoHandler::compute(std::string mode)

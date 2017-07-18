@@ -31,6 +31,8 @@ public:
 
     int getThreshold() const;
     void setThreshold(int threshold);
+    void setRoiMaskVector(int, int, int, int, int, int, int, int);
+    void setRoiMaskVector(std::vector<int>);
 
     int getMaxFrame() const;
     void setMaxFrame(int maxFrame);
@@ -45,7 +47,7 @@ private:
     void drawFlowerBeeMatches(cv::Mat& frame, std::vector<cv::KeyPoint> keypoints);
     bool insideRectangle(cv::RotatedRect rect, cv::Point point);
     cv::Mat roiMask(cv::Mat input, int threshold);
-    cv::Mat hardCodedRoiMask(cv::Mat input, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
+    cv::Mat hardCodedRoiMask(cv::Mat input);
 
     cv::SimpleBlobDetector::Params m_blobParams;
 
@@ -82,6 +84,7 @@ private:
     std::vector<int>             m_flowerColors;
     std::vector<cv::Point2f> m_arenaCorners;
     std::vector<int> m_beesOnFlower;
+    std::vector<int> m_roiMaskVector;
 
     bool m_flipFlag;
     int m_threshold = 125;

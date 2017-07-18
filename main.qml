@@ -20,6 +20,7 @@ ApplicationWindow {
             camStereo.source="image://bumblebee/Stereo/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
 
         })
+        controller.loadJsonMetadataFile("file://home/henriasv/repos/bumblebee-tracker-2/metadata/experiment1.json")
     }
 
 
@@ -52,6 +53,15 @@ ApplicationWindow {
     }
 
     FileDialog {
+        id : loadFileDialog
+        title : "Load input json file"
+        nameFilters: ["JSON files (*.json)"]
+        visible : false
+        selectExisting : true
+        onAccepted: console.log("You chose: " + loadFileDialog.fileUrls), controller.loadJsonMetadataFile(loadFileDialog.fileUrl)
+    }
+
+    FileDialog {
         id : saveFileDialog
         title: "Select output file"
         visible: false
@@ -61,10 +71,10 @@ ApplicationWindow {
 
     function saveTrajectories(url) {
         controller.initializeJsonFile(url)
-
-        for (var i = parseInt(saveTrajectoriesFirst.text); i < parseInt(saveTrajectoriesLast.text); i++) {
-            playButton.checked = false
-            //timeStepSlider.value = parseInt(i)
+        playButton.checked = false
+        var firstFrame = parseInt(saveTrajectoriesFirst.text)
+        var lastFrame = parseInt(saveTrajectoriesLast.text)
+        for (var i = firstFrame; i < lastFrame; i++) {
             controller.requestFrameUpdate(i+"/"+imageTypeGroup.checkedButton.text, parseInt(thresholdField.text), stereoButton.checked);
             controller.appendKeypointsToFile()
         }
@@ -75,7 +85,7 @@ ApplicationWindow {
             id: msg
             title: "Title"
             standardButtons: StandardButton.Save | StandardButton.Cancel
-            onAccepted: saveTrajectories(saveFileDialog.fileUrl), visible = false
+            onAccepted: saveTrajectories(saveFileDialog.fileUrl), visible=false
             ColumnLayout {
                 TextField {
                     id : saveTrajectoriesFirst
@@ -85,6 +95,7 @@ ApplicationWindow {
                     id : saveTrajectoriesLast
                     text : "120"
                 }
+
 
                 //RangeSlider{
                 //    id : saveTrajectoriesSlider
@@ -102,7 +113,7 @@ ApplicationWindow {
             anchors.fill: parent
             Button {
                 text: "Load File"
-                onClicked: root.color = "khaki"
+                onClicked: loadFileDialog.open()
             }
             ToolButton {
                 text: "Save trajectories"

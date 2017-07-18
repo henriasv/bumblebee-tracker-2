@@ -24,6 +24,7 @@ class Controller : public QObject
     int m_threshold;
 
 public:
+    Q_INVOKABLE void loadJsonMetadataFile(QUrl filename);
     Q_INVOKABLE void requestFrameUpdate(QString contents, int threshold, bool stereo);
     Q_INVOKABLE void setParameters(int window1, int window2, int minimumArea, int maximumArea);
     Q_INVOKABLE void initializeJsonFile(QUrl filename);
