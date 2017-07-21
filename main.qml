@@ -15,9 +15,9 @@ ApplicationWindow {
     Component.onCompleted: {
         controller.framesUpdated.connect(function() {
             timer.start()
-            camA.source="image://bumblebee/A/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
-            camB.source="image://bumblebee/B/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
-            camStereo.source="image://bumblebee/Stereo/"+timeStepSlider.value+"/"+imageTypeGroup.checkedButton.text
+            camA.source="image://bumblebee/A/"+parseInt(timeStepSlider.value)+"/"+imageTypeGroup.checkedButton.text
+            camB.source="image://bumblebee/B/"+parseInt(timeStepSlider.value)+"/"+imageTypeGroup.checkedButton.text
+            camStereo.source="image://bumblebee/Stereo/"+parseInt(timeStepSlider.value)+"/"+imageTypeGroup.checkedButton.text
 
         })
         controller.loadJsonMetadataFile("file://home/henriasv/repos/bumblebee-tracker-2/metadata/experiment1.json")
@@ -207,6 +207,11 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
+                RadioButton {
+                    text : "SubtractBG"
+                    checked : false
+                    ButtonGroup.group : imageTypeGroup
+                }
 
 
                 Button {
@@ -232,7 +237,7 @@ ApplicationWindow {
 
                 TextField {
                     id : dogField1
-                    text : "15"
+                    text : "11"
                     inputMethodHints: Qt.ImhDigitsOnly
                 }
 
@@ -242,7 +247,7 @@ ApplicationWindow {
 
                 TextField {
                     id : dogField2
-                    text : "31"
+                    text : "25"
                     inputMethodHints: Qt.ImhDigitsOnly
                 }
 

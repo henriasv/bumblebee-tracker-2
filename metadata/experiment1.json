@@ -18,10 +18,15 @@
 "experiment": 1,
 "fileData": {
   "pathA": "/icybox2/henrik/humlevideo_production/2017-02-16/HERO5BlackA1/concat.mp4",
-  "pathB": "/icybox2/henrik/humlevideo_production/2017-02-17/HERO5BlackB2/concat.mp4"
+  "pathB": "/icybox2/henrik/humlevideo_production/2017-02-17/HERO5BlackB2/concat.mp4",
+  "frameOffsetA" : 0,
+  "frameOffsetB" : 0
 },
+
 "startTime": 0,
+
 "flowerDetection" : {
+	"flowerType" : "split",
 	"threshL0Yellow" : 150,
 	"threshL1Yellow" : 105, 
 	"threshL2Yellow" : 145,
@@ -32,10 +37,18 @@
 
 "colorFiltering" : {
 	"threshL1Yellow" : 112, 
-	"threshL2Yellow" : 140,
+	"threshL2Yellow" : 250,
 	"threshL0BlueLight" : 140,
 	"threshInvL2BlueLight" : 124,
 	"threshInvL2BlueDark" : 121	
-}	
+},	
+
+"beeDetection" : {
+	"threshold" : 100,
+	"lowerGaussian" : 11,
+	"upperGaussian" : 25,
+	"minArea" : 100,
+	"maxArea" : 2000
+}
 
 }

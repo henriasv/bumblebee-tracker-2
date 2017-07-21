@@ -15,13 +15,15 @@ void Controller::loadJsonMetadataFile(QUrl filename)
     camA->load(pathA, true);
     camB->load(pathB, false);
 
+    int frameOffsetA = root.get<int>("fileData.frameOffsetA");
+    int frameOffsetB = root.get<int>("fileData.frameOffsetB");
+    camA->setFrameOffset(frameOffsetA);
+    camB->setFrameOffset(frameOffsetB);
+
     std::vector<int> cornersA;
     std::vector<int> cornersB;
 
-
     boost::property_tree::ptree arenaData = root.get_child("arenaData");
-
-
     for (boost::property_tree::ptree::value_type& row : arenaData.get_child("cornerPixelsA"))
         for (boost::property_tree::ptree::value_type & value : row.second)
             cornersA.push_back(value.second.get_value<int>());
@@ -32,9 +34,32 @@ void Controller::loadJsonMetadataFile(QUrl filename)
     camA->setRoiMaskVector(cornersA);
     camB->setRoiMaskVector(cornersB);
 
+    int FDthreshL0Yellow = root.get<int>("flowerDetection.threshL0Yellow");
+    int FDthreshL1Yellow = root.get<int>("flowerDetection.threshL1Yellow");
+    int FDthreshL2Yellow = root.get<int>("flowerDetection.threshL2Yellow");
+    int FDthreshL0BlueLight = root.get<int>("flowerDetection.threshL0BlueLight");
+    int FDthreshL2BlueLight = root.get<int>("flowerDetection.threshInvL2BlueLight");
+    int FDthreshL2BlueDark = root.get<int>("flowerDetection.threshInvL2BlueDark");
+    std::string FDflowerType(root.get<std::string>("flowerDetection.flowerType"));
+
+    int CFthreshL1Yellow = root.get<int>("colorFiltering.threshL1Yellow");
+    int CFthreshL2Yellow = root.get<int>("colorFiltering.threshL2Yellow");
+    int CFthreshL0BlueLight = root.get<int>("colorFiltering.threshL0BlueLight");
+    int CFthreshL2BlueLight = root.get<int>("colorFiltering.threshInvL2BlueLight");
+    int CFthreshL2BlueDark = root.get<int>("colorFiltering.threshInvL2BlueDark");
+
+    camA->setFlowerDetectionColorFilterParameters(FDflowerType, FDthreshL0Yellow, FDthreshL1Yellow, FDthreshL2Yellow, FDthreshL0BlueLight, FDthreshL2BlueLight, FDthreshL2BlueDark);
+    camB->setFlowerDetectionColorFilterParameters(FDflowerType, FDthreshL0Yellow, FDthreshL1Yellow, FDthreshL2Yellow, FDthreshL0BlueLight, FDthreshL2BlueLight, FDthreshL2BlueDark);
+
+    camA->setColorFilteringParameters(CFthreshL1Yellow, CFthreshL2Yellow, CFthreshL0BlueLight, CFthreshL2BlueLight, CFthreshL2BlueDark);
+    camB->setColorFilteringParameters(CFthreshL1Yellow, CFthreshL2Yellow, CFthreshL0BlueLight, CFthreshL2BlueLight, CFthreshL2BlueDark);
 
 
-
+    //int BDthresh = root.get<int>("beeDetection.threshold");
+    //int BDlowerGaussian = root.get<int>("beeDetection.lowerGaussian");
+    //int BDupperGaussian = root.get<int>("beeDetection.upperGaussian");
+    //int BDminArea = root.get<int>("beeDetection.minArea");
+    //int BDmaxArea = root.get<int>("beeDetection.maxArea");
 }
 
 void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)

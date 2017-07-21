@@ -31,6 +31,8 @@ public:
 
     int getThreshold() const;
     void setThreshold(int threshold);
+    void setFlowerDetectionColorFilterParameters(std::string, int, int, int, int, int, int);
+    void setColorFilteringParameters(int, int, int, int, int);
     void setRoiMaskVector(int, int, int, int, int, int, int, int);
     void setRoiMaskVector(std::vector<int>);
 
@@ -39,6 +41,8 @@ public:
     cv::Mat m_cpuFrame;
     cv::Mat m_gray;
     QString m_camName;
+    void setFrameOffset(int frameOffset);
+
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
@@ -57,7 +61,7 @@ private:
     //cv::Mat m_colorFilteredFrame;
     cv::Mat m_identifierFrame;
     //cv::Mat m_outputFrame;
-
+    cv::cuda::GpuMat m_firstFrame;
     cv::cuda::GpuMat m_blueFlowerMask;
     cv::cuda::GpuMat m_yellowFlowerMask;
 
@@ -91,6 +95,22 @@ private:
 
     int m_maxFrame;
     int m_previousFrame = -1;
+    int m_frameOffset;
+
+    // paramters for flower color filtering
+    int m_FDthreshL0Yellow = 150;
+    int m_FDthreshL1Yellow = 105;
+    int m_FDthreshL2Yellow = 145;
+    int m_FDthreshL0BlueLight = 140;
+    int m_FDthreshL2BlueLight = 125;
+    int m_FDthreshL2BlueDark = 122;
+    std::string m_FDflowerType = "split";
+
+    int m_CFthreshL1Yellow = 112;
+    int m_CFthreshL2Yellow = 140;
+    int m_CFthreshL0BlueLight = 140;
+    int m_CFthreshL2BlueLight = 124;
+    int m_CFthreshL2BlueDark = 121;
 
 };
 
