@@ -150,7 +150,7 @@ void BeeTracker2d::getFrame(int frameIndex, std::string mode)
         m_edgeDetector->detect(m_blueFlowerMask, cannyMatBlue);
         m_edgeDetector->detect(m_yellowFlowerMask, cannyMatYellow);
 
-        cannyMats.push_back(cannyMatBlue);
+        cannyMats.push_back(cannyMatBlue); // This makes blue Color 0. Candidate for refactoring with string colors.
         cannyMats.push_back(cannyMatYellow);
 
         int counter = 0;
@@ -243,6 +243,35 @@ QString BeeTracker2d::getDumpString()
         }
         out <<" [ " << keypoints[keypoints.size()-1].pt.x << ", " << keypoints[keypoints.size()-1].pt.y << " ] \n";
     }
+    out <<" ], \n \"flowerColors\" : [";
+    for (int i = 0 ; i<m_flowerColors.size()-1 ; i++)
+    {
+        if (m_flowerColors[i] == 0)
+        {
+            out << "blue, ";
+        }
+        else if (m_flowerColors[i] == 1)
+        {
+            out << "yellow, ";
+        }
+        else
+        {
+            out << "undefined(error), ";
+        }
+    }
+    if (m_flowerColors[m_flowerColors.size()-1] == 0)
+    {
+        out << "blue\n";
+    }
+    else if (m_flowerColors[m_flowerColors.size()-1] == 1)
+    {
+        out << "yellow\n";
+    }
+    else
+    {
+        out << "undefined(error)\n";
+    }
+
     out <<" ], \n \"FlowerBeeStatus\" : [";
     for (int i = 0; i<m_beesOnFlower.size()-1; i++)
     {
