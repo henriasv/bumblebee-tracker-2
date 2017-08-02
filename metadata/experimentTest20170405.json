@@ -1,24 +1,24 @@
 {
 "arenaData": {
   "cornerPixelsA": [
-    [84, 2574],
-    [1474, 2115],
-    [1462, 563],
-    [69, 102]
+    [120, 2567],
+    [1491, 2100],
+    [1456, 563],
+    [85, 132]
   ],
   "cornerPixelsB": [
-    [64, 2145],
-    [1434, 2591],
-    [1438, 164],
-    [58, 602]
+    [60, 2151],
+    [1421, 2569],
+    [1387, 171],
+    [28, 616]
   ],
   "correspondingPointsA": [],
   "correspondingPointsB": []
 },
 "experiment": 1,
 "fileData": {
-  "pathA": "/Volumes/SimulationData/humlevideo_production/2017-04-05/HERO5BlackA1/concatGOPR0053.mp4",
-  "pathB": "/Volumes/SimulationData/humlevideo_production/2017-04-05/HERO5BlackB2/concatGOPR0076.mp4",
+  "pathA": "/scratch/humlevideo_production/2017-04-05/HERO5BlackA1/concatGOPR0053.mp4",
+  "pathB": "/scratch/humlevideo_production/2017-04-05/HERO5BlackB2/concatGOPR0076.mp4",
   "frameOffsetA" : 0,
   "frameOffsetB" : 0
 },
