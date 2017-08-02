@@ -248,11 +248,11 @@ QString BeeTracker2d::getDumpString()
     {
         if (m_flowerColors[i] == 0)
         {
-            out << "blue, ";
+            out << "\"blue\", ";
         }
         else if (m_flowerColors[i] == 1)
         {
-            out << "yellow, ";
+            out << "\"yellow\", ";
         }
         else
         {
@@ -261,15 +261,15 @@ QString BeeTracker2d::getDumpString()
     }
     if (m_flowerColors[m_flowerColors.size()-1] == 0)
     {
-        out << "blue\n";
+        out << "\"blue\"\n";
     }
     else if (m_flowerColors[m_flowerColors.size()-1] == 1)
     {
-        out << "yellow\n";
+        out << "\"yellow\"\n";
     }
     else
     {
-        out << "undefined(error)\n";
+        out << "\"undefined(error)\"\n";
     }
 
     out <<" ], \n \"FlowerBeeStatus\" : [";

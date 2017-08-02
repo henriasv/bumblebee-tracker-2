@@ -91,6 +91,7 @@ void Controller::setParameters(int window1, int window2, int minimumArea, int ma
 
 void Controller::initializeJsonFile(QUrl filename)
 {
+    std::cout << "trying to open " << filename.toLocalFile().toStdString() << std::endl;
     m_jsonFile.open(filename.toLocalFile().toStdString(), std::ofstream::out);
     if (!m_jsonFile.is_open())
     {
@@ -143,7 +144,7 @@ Controller::Controller(QObject *parent) : QObject(parent)
 
 QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mode)
 {
-    setFrameMax(camB->getMaxFrame());
+    setFrameMax(camA->getMaxFrame());
     if (cam == QString("A"))
     {
         cv::Mat frame = camA->m_cpuFrame;

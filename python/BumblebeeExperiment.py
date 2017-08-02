@@ -15,15 +15,59 @@ class RunningMean:
         retArray[padL:-padR] = np.convolve(npArray, np.ones((N,))/N, mode='valid')
         return retArray
 
+def identifyLandings(array, threshold):
+    onFlower = array>threshold
+    changes = np.append(np.where(onFlower[:-1] != onFlower[1:])[0], len(onFlower))
+    durations = changes[1:]-changes[:-1]
+    times = changes[:-1]
+    print(onFlower)
+    return times[0::2], durations[0::2]
+
 class BumblebeeExperiment:
     def __init__(self, parameterFileName):
         with open(parameterFileName) as ifile:
             self.tracking = json.load(ifile)
-        #with open(self.parameters["TrackingFile"]) as ifile:
-        #    self.tracking = json.load(ifile)
-        #print(self.tracking)
         self.camATracking = self.tracking[0::2]
         self.camBTracking = self.tracking[1::2]
+
+    def sumOfBeesOnIndividualFlower(self):
+        flowerDataA = []
+        flowerDataB = []
+        flowerColors = self.camATracking[0]["flowerColors"]
+        for stepA, stepB in zip(self.camATracking, self.camBTracking):
+            flowerDataA.append(stepA['FlowerBeeStatus'])
+            flowerDataB.append(stepB['FlowerBeeStatus'])
+
+
+        flowerDataA = np.asarray(flowerDataA)
+        flowerDataB = np.asarray(flowerDataB)
+        
+        flowerDataAll = np.logical_and(flowerDataA, flowerDataB);
+        numFlowers = flowerDataAll.shape[1]
+        print(flowerDataAll.shape)
+        f, axarr = plt.subplots(int(np.ceil(numFlowers/2)), 2)
+        myfig = plt.figure()
+        myScatter = plt.axes()
+        myfig2 = plt.figure()
+        myBar  = plt.axes()
+        myRunningMean = RunningMean(120)
+        for i in range(numFlowers):
+            plotColor = "b" if flowerColors[i] == "blue" else "y"
+            smoothedData = myRunningMean(flowerDataAll[:,i])
+            #axarr[int(np.floor(i/2)), i%2].plot(identifyLandings(smoothedData, 0.5), c="k")
+            axarr[int(np.floor(i/2)), i%2].plot(smoothedData, c=plotColor)
+            axarr[int(np.floor(i/2)), i%2].set_ylim([-0.1, 1.1])
+            times, durations = identifyLandings(smoothedData, 0.5) 
+            myScatter.plot(times, durations, '--o', c=plotColor)
+            if len(times)>0 and len(durations) > 0:
+                print("times: ", len(times), " durations", len(durations))
+                for time, duration in zip(times, durations):
+                    myBar.barh(i, duration, left=time, height=1, align='center', color=plotColor, alpha = 1.0)
+                    if duration < 1000:
+                        myBar.barh(i, 1000, left=time, height=1, align='center', color=plotColor, alpha = 0.5)
+            myBar.set_xlim([0, len(smoothedData)])
+        
+        plt.show()
 
     def sumOfBeesOnFlower(self):
         flowerDataA = []
@@ -32,12 +76,8 @@ class BumblebeeExperiment:
             flowerDataA.append(stepA['FlowerBeeStatus'])
             flowerDataB.append(stepB['FlowerBeeStatus'])
 
-
-
         flowerDataA = np.asarray(flowerDataA)
-        #flowerDataASummed = np.sum(flowerDataA, axis=1)
         flowerDataB = np.asarray(flowerDataB)
-        #flowerDataBSummed = np.sum(flowerDataB, axis=1)
         
         flowerDataAll = np.logical_and(flowerDataA, flowerDataB);
         flowerDataSummed = np.sum(flowerDataAll, axis=1)
@@ -53,4 +93,4 @@ class BumblebeeExperiment:
 if __name__=="__main__":
     import sys
     experiment = BumblebeeExperiment(sys.argv[1])
-    experiment.sumOfBeesOnFlower()
+    experiment.sumOfBeesOnIndividualFlower()

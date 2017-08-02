@@ -8,26 +8,36 @@ def readFrame(cap, frameNum=None):
 	#else:
 	#	pass
 	ret, frame = cap.read()
-	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+	#frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	return frame
 
 
 
 capA = cv2.VideoCapture(sys.argv[1])
-capB = cv2.VideoCapture(sys.argv[2])
+#capB = cv2.VideoCapture(sys.argv[2])
 
 frame1A = readFrame(capA, 1)
-frame1B = readFrame(capB)
+#frame1B = readFrame(capB)
 frame1A = cv2.flip(frame1A, -1)
 hfig = plt.figure()
 p1 = plt.subplot(211)
-p2 = plt.subplot(212)
+#p2 = plt.subplot(212)
 axframe = plt.axes([0.1, 0.05, 0.8, 0.03], facecolor="b")
 
-p1.imshow(frame1A)
-p2.imshow(frame1B)
+#cv2.imshow("frame", frame1A)
+#cv2.waitKey(0)
 
-plt.show()
+frameNum = int(sys.argv[2])
+maxFrame = int(sys.argv[3])
+while frameNum<maxFrame:
+	cv2.imshow("frame2", readFrame(capA, frameNum))
+	cv2.waitKey(1)
+	frameNum += 1
+#p1.imshow(frame1A)
+#p2.imshow(frame1B)
+
+
+#plt.show()
 
 #def update(val):
 	#capA.

@@ -20,7 +20,7 @@ ApplicationWindow {
             camStereo.source="image://bumblebee/Stereo/"+parseInt(timeStepSlider.value)+"/"+imageTypeGroup.checkedButton.text
 
         })
-        controller.loadJsonMetadataFile("file://Users/henriksveinsson/projects/BumblebeeTracker/metadata/experimentTest20170405.json")
+        controller.loadJsonMetadataFile("file://home/henriasv/repos/bumblebee-tracker-2/metadata/experimentTest20170405.json")
     }
 
 
