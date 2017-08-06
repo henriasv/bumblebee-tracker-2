@@ -15,10 +15,10 @@
   "correspondingPointsA": [],
   "correspondingPointsB": []
 },
-"experiment": 1,
+"experiment": 13,
 "fileData": {
-  "pathA": "/scratch/humlevideo_production/2017-04-05/HERO5BlackA1/concatGOPR0053.mp4",
-  "pathB": "/scratch/humlevideo_production/2017-04-05/HERO5BlackB2/concatGOPR0076.mp4",
+  "pathA": "/bumblebee/humlevideo_production/2017-04-05/HERO5BlackA1/concatGOPR0053.mp4",
+  "pathB": "/bumblebee/humlevideo_production/2017-04-05/HERO5BlackB2/concatGOPR0076.mp4",
   "frameOffsetA" : 0,
   "frameOffsetB" : 0
 },
