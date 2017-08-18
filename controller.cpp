@@ -144,7 +144,7 @@ Controller::Controller(QObject *parent) : QObject(parent)
 
 QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mode)
 {
-    setFrameMax(camA->getMaxFrame());
+    setFrameMax(std::min(camA->getMaxFrame()-camA->getFrameOffset(), camB->getMaxFrame()-camB->getFrameOffset()));
     if (cam == QString("A"))
     {
         cv::Mat frame = camA->m_cpuFrame;

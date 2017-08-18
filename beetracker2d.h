@@ -43,6 +43,8 @@ public:
     QString m_camName;
     void setFrameOffset(int frameOffset);
 
+    int getFrameOffset() const;
+
 private:
     cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
     cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);

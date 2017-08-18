@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 class RunningMean:
@@ -31,6 +32,7 @@ class BumblebeeExperiment:
         self.camBTracking = self.tracking[1::2]
 
     def sumOfBeesOnIndividualFlower(self):
+        landingData = {"tid" : [], "varighet" : [], "farge": [], "blomst":[]}
         flowerDataA = []
         flowerDataB = []
         flowerColors = self.camATracking[0]["flowerColors"]
@@ -62,12 +64,19 @@ class BumblebeeExperiment:
             if len(times)>0 and len(durations) > 0:
                 print("times: ", len(times), " durations", len(durations))
                 for time, duration in zip(times, durations):
+                    landingData["tid"].append(time); landingData["varighet"].append(duration)
+                    landingData["farge"].append(flowerColors[i]); landingData["blomst"].append(i)
                     myBar.barh(i, duration, left=time, height=1, align='center', color=plotColor, alpha = 1.0)
                     if duration < 1000:
                         myBar.barh(i, 1000, left=time, height=1, align='center', color=plotColor, alpha = 0.5)
             myBar.set_xlim([0, len(smoothedData)])
+        dataFrame = pd.DataFrame.from_dict(landingData)
+        dataFrame = dataFrame.sort_values("tid")
+        dataFrame = dataFrame.reset_index()
+        del dataFrame["index"]
+        self.landingData = dataFrame
         
-        plt.show()
+        print(dataFrame)
 
     def sumOfBeesOnFlower(self):
         flowerDataA = []
@@ -92,5 +101,16 @@ class BumblebeeExperiment:
 
 if __name__=="__main__":
     import sys
-    experiment = BumblebeeExperiment(sys.argv[1])
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("infile", type=str)
+    parser.add_argument("--csv", type=str)
+    parser.add_argument("--plot", action="store_true")
+    args = parser.parse_args()
+
+    experiment = BumblebeeExperiment(args.infile)
     experiment.sumOfBeesOnIndividualFlower()
+    if (args.csv):
+        experiment.landingData.to_csv(args.csv, sep=";", index_label="landing")
+    if (args.plot):
+        plt.show()

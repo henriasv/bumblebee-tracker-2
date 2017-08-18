@@ -534,6 +534,11 @@ cv::Mat BeeTracker2d::hardCodedRoiMask(cv::Mat input)
     return input;
 }
 
+int BeeTracker2d::getFrameOffset() const
+{
+    return m_frameOffset;
+}
+
 void BeeTracker2d::setFrameOffset(int frameOffset)
 {
     m_frameOffset = frameOffset;
