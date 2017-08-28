@@ -1,0 +1,42 @@
+{
+"arenaData": {
+  "cornerPixelsA": [
+    [],
+    [],
+    [],
+    []
+  ],
+  "cornerPixelsB": [
+    [],
+    [],
+    [],
+    []
+  ],
+  "correspondingPointsA": [],
+  "correspondingPointsB": []
+},
+"experiment": 1,
+"fileData": {
+  "filesA": [
+    "GOPR0015.MP4",
+    "GP010015.MP4",
+    "GP020015.MP4",
+    "GP030015.MP4",
+    "GP040015.MP4",
+    "GP050015.MP4",
+    "GP060015.MP4"
+  ],
+  "filesB": [
+    "GOPR0034.MP4",
+    "GP010034.MP4",
+    "GP020034.MP4",
+    "GP030034.MP4",
+    "GP040034.MP4",
+    "GP050034.MP4",
+    "GP060034.MP4"
+  ],
+  "relativePathA": "2017-02-16/HERO5BlackA1",
+  "relativePathB": "2017-02-17/HERO5BlackB2"
+},
+"startTime": 0
+}

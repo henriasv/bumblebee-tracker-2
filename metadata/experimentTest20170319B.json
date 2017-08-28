@@ -1,0 +1,54 @@
+{
+"arenaData": {
+  "cornerPixelsA": [
+    [106, 2567],
+    [1476, 2113],
+    [1458, 580],
+    [96, 126]
+  ],
+  "cornerPixelsB": [
+    [68, 2154],
+    [1436, 2572],
+    [1389, 174],
+    [35, 628]
+  ],
+  "correspondingPointsA": [],
+  "correspondingPointsB": []
+},
+"experiment": "None",
+"fileData": {
+  "pathA": "/bumblebee/humlevideo_production/2017-03-19/HERO5BlackA1/concatGOPR0039.mp4",
+  "pathB": "/bumblebee/humlevideo_production/2017-03-19/HERO5BlackB2/concatGOPR0060.mp4",
+  "frameOffsetA" : 0,
+  "frameOffsetB" : 0
+},
+
+"startTime": 0,
+
+"flowerDetection" : {
+	"flowerType" : "split",
+	"threshL0Yellow" : 150,
+	"threshL1Yellow" : 105, 
+	"threshL2Yellow" : 140,
+	"threshL0BlueLight" : 140,
+	"threshInvL2BlueLight" : 125,
+	"threshInvL2BlueDark" : 122
+},
+
+"colorFiltering" : {
+	"threshL1Yellow" : 112, 
+	"threshL2Yellow" : 250,
+	"threshL0BlueLight" : 140,
+	"threshInvL2BlueLight" : 124,
+	"threshInvL2BlueDark" : 121	
+},	
+
+"beeDetection" : {
+	"threshold" : 100,
+	"lowerGaussian" : 11,
+	"upperGaussian" : 25,
+	"minArea" : 100,
+	"maxArea" : 2000
+}
+
+}
