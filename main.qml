@@ -20,7 +20,7 @@ ApplicationWindow {
             camStereo.source="image://bumblebee/Stereo/"+parseInt(timeStepSlider.value)+"/"+imageTypeGroup.checkedButton.text
 
         })
-        controller.loadJsonMetadataFile("file://home/henriasv/repos/bumblebee-tracker-2/metadata/experimentTest20170405.json")
+        controller.loadJsonMetadataFile("file://Users/henriksveinsson/repos/bumblebee-tracker-2/metadata/experimentTest20170309.json")
     }
 
 
@@ -201,23 +201,11 @@ ApplicationWindow {
                     ButtonGroup.group : imageTypeGroup
                     //exclusiveGroup : imageMode
                 }
-                RadioButton {
-                    text : "Features"
-                    checked : false
-                    ButtonGroup.group : imageTypeGroup
-                    //exclusiveGroup : imageMode
-                }
-                RadioButton {
-                    text : "SubtractBG"
-                    checked : false
-                    ButtonGroup.group : imageTypeGroup
-                }
-
 
                 Button {
                     id : stereoButton
                     checkable : true
-                    checked: false
+                    checked: true
                     text : "Stereo"
                 }
 

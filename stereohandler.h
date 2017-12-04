@@ -2,7 +2,7 @@
 #define STEREOHANDLER_H
 
 #include <beetracker2d.h>
-#include <opencv2/cudafeatures2d.hpp>
+//#include <opencv2/cudafeatures2d.hpp>
 #include <memory>
 
 class StereoHandler

@@ -129,15 +129,6 @@ Controller::Controller(QObject *parent) : QObject(parent)
     m_imageProvider->setController(this);
     camA = std::make_shared<BeeTracker2d>("A");
     camB = std::make_shared<BeeTracker2d>("B");
-    //camA->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0034.MP4", true);
-    //camB->load("/Users/henriksveinsson/projects/BumblebeeTracker/testVideo/GOPR0055.MP4", false);
-    //camA->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010017.MP4", true);
-    //camB->load("/Users/henriksveinsson/Dropbox/humlevideo/GP010036.MP4", false);
-    //camA->load("/home/henriasv/testvideo/GOPR0018.mp4", true);
-    //camB->load("/home/henriasv/testvideo/GOPR0039.mp4", false);
-    //camA->load("/home/henriasv/testvideo/test_concat/A/concat.mp4", true);
-    //camB->load("/home/henriasv/testvideo/test_concat/B/concat.mp4", false);
-
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
 
 }
@@ -147,18 +138,30 @@ QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mod
     setFrameMax(std::min(camA->getMaxFrame()-camA->getFrameOffset(), camB->getMaxFrame()-camB->getFrameOffset()));
     if (cam == QString("A"))
     {
-        cv::Mat frame = camA->m_cpuFrame;
-        return QPixmap::fromImage(QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
+        cv::Mat frame;
+        camA->m_cpuFrame.copyTo(frame);
+        //camA->m_cpuFrame.copyTo(frame);
+        if (m_pixmapA)
+        {
+            std::cout << "Deleting pixmap" << std::endl;
+            delete m_pixmapA;
+        }
+        QImage * tmpImage = new QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+        m_pixmapA = new QPixmap(QPixmap::fromImage(*tmpImage));
+        delete tmpImage;
+        return *m_pixmapA;
     }
     else if (cam == QString("B"))
     {
-        cv::Mat frame = camB->m_cpuFrame;
+        cv::Mat frame;
+        //camB->m_cpuFrame.copyTo(frame);
         return QPixmap::fromImage(QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
     }
 
     else if (cam == QString("Stereo"))
     {
-        cv::Mat frame = m_stereo->m_frame;
+        cv::Mat frame;
+        //m_stereo->m_frame.copyTo(frame);
         return QPixmap::fromImage(QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
     }
 

@@ -32,7 +32,7 @@ class RunningMean:
 oversikt = pandas.DataFrame.from_csv('/Users/henriksveinsson/humlevideo_production/oversikt.csv', sep=";", index_col=None)
 print(oversikt)
 
-colors = {"0":"green", "1":"yellow", "10":"orange", "100":"red"}
+colors = {"0":"green", "1":"orange", "10":"red", "100":"black"}
 
 def loadAndCalculate(filename):
 	print(filename)
@@ -95,20 +95,20 @@ proportionDict = {"dose":[], "activityProportion":[], "bol":[], "dager_etter_lev
 for element in results:
 	if not element is None:
 		plt.figure(1)
-		plt.subplot(1, 2, 1)
+		plt.subplot(1, 2, 2)
 		increments = element["velocities"]
 		dose = element["dose"]
 		bol = element["bol"]
 		dager_etter_levering = element["dager_etter_levering"]
-		plt.plot(increments, np.arange(len(increments))/len(increments), color=colors[str(dose)])
-		plt.xlabel("Speed", fontsize=14)
-		plt.ylabel("Cumulative probability", fontsize=14)
+		plt.plot(increments[::100], (np.arange(len(increments))/len(increments))[::100], color=colors[str(dose)])
+		plt.xlabel(r"$\mathrm{Speed} \ \left(\frac{\mathrm{px}}{\frac{1}{60}\mathrm{sec}}\right)$", fontsize=14)
+		plt.ylabel("Cumulative proportion", fontsize=14)
 		plt.axvline(3, color='k', linestyle='--')
-		plt.subplot(1, 2, 2)
-		plt.hist(increments, bins=10000, histtype="step")
+		plt.subplot(1, 2, 1)
+		plt.hist(increments, bins=10000, histtype="step", color=colors[str(dose)])
 		plt.xscale("log")
 		plt.yscale("log")
-		plt.xlabel("Speed", fontsize=14)
+		plt.xlabel(r"$\mathrm{Speed} \ \left(\frac{\mathrm{px}}{\frac{1}{60}\mathrm{sec}}\right)$", fontsize=14)
 		plt.ylabel("Count", fontsize=14)
 		plt.axvline(3, color='k', linestyle='--')
 

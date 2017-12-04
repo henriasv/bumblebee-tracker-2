@@ -3,7 +3,8 @@ TARGET = Bumblebee
 QT += qml quick multimediawidgets
 CONFIG += qt c++14 plugin
 
-unix: LIBS += -L/usr/local/lib -lopencv_cudafeatures2d -lopencv_cudastereo -lopencv_cudafilters -lopencv_cudaimgproc -lopencv_cudaarithm  -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_xfeatures2d -lopencv_objdetect -lopencv_highgui -lopencv_videoio -lopencv_photo -lopencv_imgcodecs -lopencv_video -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core
+unix: LIBS += -L/usr/local/lib -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_objdetect -lopencv_highgui -lopencv_videoio -lopencv_photo -lopencv_imgcodecs -lopencv_video -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core
+
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 

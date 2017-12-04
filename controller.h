@@ -51,6 +51,9 @@ public:
 private:
     std::ofstream m_jsonFile;
     bool hasWrittenFrame = false;
+    QPixmap* m_pixmapA;
+    QPixmap* m_pixmapB;
+    QPixmap* m_pixmapStereo;
 
 signals:
 

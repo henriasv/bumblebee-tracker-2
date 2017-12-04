@@ -17,8 +17,8 @@
 },
 "experiment": "None",
 "fileData": {
-  "pathA": "/bumblebee/humlevideo_production/2017-03-09/HERO5BlackA1/concatGOPR0029.mp4",
-  "pathB": "/bumblebee/humlevideo_production/2017-03-09/HERO5BlackB2/concatGOPR0050.mp4",
+  "pathA": "/Users/henriksveinsson/humlevideo_production/2017-03-09/HERO5BlackA1/concatGOPR0029.mp4",
+  "pathB": "/Users/henriksveinsson/humlevideo_production/2017-03-09/HERO5BlackB2/concatGOPR0050.mp4",
   "frameOffsetA" : 630,
   "frameOffsetB" : 0
 },

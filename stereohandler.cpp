@@ -1,7 +1,7 @@
 #include "stereohandler.h"
 #include <opencv2/core/cuda.hpp>
 #include <opencv2/calib3d.hpp>
-#include <opencv2/cudastereo.hpp>
+//#include <opencv2/cudastereo.hpp>
 #include <iostream>
 #include <functions.h>
 

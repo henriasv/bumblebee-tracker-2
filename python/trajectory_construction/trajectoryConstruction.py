@@ -116,6 +116,7 @@ def plotTrajectoryOnVideo(tr, video, startFrame, stopFrame, writer=None, savefig
         
         #plt.show()
         if savefig == True:
+            plt.gca().invert_yaxis()
             plt.xlabel("x (pixels)")
             plt.ylabel("y (pixels)")
             plt.savefig("trajectories.pdf", dpi=300)

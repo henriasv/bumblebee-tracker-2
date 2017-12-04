@@ -4,13 +4,13 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/xfeatures2d.hpp>
+//#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d.hpp>
-#include <opencv2/cudafeatures2d.hpp>
-#include <opencv2/xfeatures2d/cuda.hpp>
-#include <opencv2/cudaimgproc.hpp>
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudafilters.hpp>
+//#include <opencv2/cudafeatures2d.hpp>
+//#include <opencv2/xfeatures2d/cuda.hpp>
+//#include <opencv2/cudaimgproc.hpp>
+//#include <opencv2/cudaarithm.hpp>
+//#include <opencv2/cudafilters.hpp>
 #include <QString>
 #include <QFile>
 #include <QTextStream>
@@ -38,59 +38,45 @@ public:
 
     int getMaxFrame() const;
     void setMaxFrame(int maxFrame);
-    cv::Mat m_cpuFrame;
-    cv::Mat m_gray;
+    cv::UMat m_cpuFrame;
+    cv::UMat m_gray;
     QString m_camName;
     void setFrameOffset(int frameOffset);
 
     int getFrameOffset() const;
 
 private:
-    cv::cuda::GpuMat processFrame(cv::cuda::GpuMat labFrame, std::string mode);
-    cv::cuda::GpuMat colorFilter(cv::cuda::GpuMat labFrame);
-    void colorFilterForFlowerDetection(cv::cuda::GpuMat labFrame);
+    cv::UMat processFrame(cv::UMat labFrame, std::string mode);
+    cv::UMat colorFilter(cv::UMat labFrame);
+    void colorFilterForFlowerDetection(cv::UMat labFrame);
     void drawFlowerBoxes();
-    void drawFlowerBeeMatches(cv::Mat& frame, std::vector<cv::KeyPoint> keypoints);
+    void drawFlowerBeeMatches(cv::UMat& frame, std::vector<cv::KeyPoint> keypoints);
     bool insideRectangle(cv::RotatedRect rect, cv::Point point);
-    cv::Mat roiMask(cv::Mat input, int threshold);
-    cv::Mat hardCodedRoiMask(cv::Mat input);
+    cv::UMat hardCodedRoiMask(cv::UMat input);
 
     cv::SimpleBlobDetector::Params m_blobParams;
+    cv::Ptr<cv::SimpleBlobDetector> m_blob_detector;
+    int m_DOGWindow1 = 11;
+    int m_DOGWindow2 = 25;
 
-    //cv::Mat m_rawFrame;
-    cv::Mat m_binaryFrame;
-    //cv::Mat m_smoothedFrame;
-    //cv::Mat m_colorFilteredFrame;
-    cv::Mat m_identifierFrame;
-    //cv::Mat m_outputFrame;
-    cv::cuda::GpuMat m_firstFrame;
-    cv::cuda::GpuMat m_blueFlowerMask;
-    cv::cuda::GpuMat m_yellowFlowerMask;
+    cv::UMat m_binaryFrame;
+    cv::UMat m_identifierFrame;
+    cv::UMat m_firstFrame;
+    cv::UMat m_blueFlowerMask;
+    cv::UMat m_yellowFlowerMask;
 
-    cv::cuda::GpuMat m_frameUnprocessed;
-    //cv::cuda::GpuMat m_frameColorfiltered;
-    cv::cuda::GpuMat m_frameProcessed;
+    cv::UMat m_frameUnprocessed;
+    cv::UMat m_frameColorfiltered;
+    cv::UMat m_frameProcessed;
 
-    cv::Ptr<cv::cuda::Filter> m_gaussianFilter;
-    cv::Ptr<cv::cuda::Filter> m_morphologyFilter;
-    cv::Ptr<cv::cuda::Filter> m_erodeFilter;
-    cv::Ptr<cv::cuda::Filter> m_flowerDilateFilter;
+    cv::Mat m_elementErode;
 
-    cv::Ptr<cv::cuda::CannyEdgeDetector> m_edgeDetector;
-
-    cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG1;
-    cv::Ptr<cv::cuda::Filter> m_gaussianFilterDOG2;
-    cv::Ptr<cv::cuda::Filter> m_gaussianFilterMax;
-    cv::cuda::SURF_CUDA m_surfDetector;
-    cv::cuda::GpuMat keypoints1GPU;
-    cv::cuda::GpuMat descriptors1GPU;
-    std::vector<cv::KeyPoint> keypoints;
-    std::vector<float> descriptors;
-    std::vector<cv::RotatedRect> m_flowerRects;
-    std::vector<int>             m_flowerColors;
-    std::vector<cv::Point2f> m_arenaCorners;
-    std::vector<int> m_beesOnFlower;
-    std::vector<int> m_roiMaskVector;
+    std::vector<cv::KeyPoint>       keypoints;
+    std::vector<cv::RotatedRect>    m_flowerRects;
+    std::vector<int>                m_flowerColors;
+    std::vector<cv::Point2f>        m_arenaCorners;
+    std::vector<int>                m_beesOnFlower;
+    std::vector<int>                m_roiMaskVector;
 
     bool m_flipFlag;
     int m_threshold = 125;

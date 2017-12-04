@@ -19,6 +19,5 @@ QPixmap ControllerImageProvider::requestPixmap(const QString &id, QSize *size, c
     QString mode = strings[2];
     qDebug() << "processing to return frame " << id << " with index " << frameIndex;
     qDebug() << strings;
-    QPixmap retFrame =  m_controller->handlePixmapRequest(cam, frameIndex, mode);
-    return retFrame;
+    return m_controller->handlePixmapRequest(cam, frameIndex, mode);
 }
