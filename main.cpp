@@ -1,15 +1,15 @@
+#include <QDebug>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QVideoWidget>
-#include <QDebug>
 #include <QQmlContext>
 #include <QScopedPointer>
+#include <QVideoWidget>
 #include <iostream>
 
-#include <controllerimageprovider.h>
 #include <controller.h>
+#include <controllerimageprovider.h>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     qmlRegisterType<Controller>("TrackingController", 1, 0, "Controller");
 
@@ -17,10 +17,11 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     Controller controller;
-    std::cout << "Created controller" <<  std::endl;
-    //engine.rootContext()->setContextObject(controller);
+    std::cout << "Created controller" << std::endl;
+    // engine.rootContext()->setContextObject(controller);
     engine.rootContext()->setContextProperty("controller", &controller);
-    engine.addImageProvider(QLatin1String("bumblebee"), controller.m_imageProvider);
+    engine.addImageProvider(QLatin1String("bumblebee"),
+        controller.m_imageProvider);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     return app.exec();
 }

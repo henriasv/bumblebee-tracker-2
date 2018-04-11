@@ -1,12 +1,13 @@
 #include "controller.h"
 #include <QDebug>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <utility>
+#include <boost/property_tree/ptree.hpp>
 #include <iostream>
+#include <utility>
 
 void Controller::loadJsonMetadataFile(QUrl filename)
 {
+    std::cout << "In loadJsonMetadataFile constructor" << std::endl;
     boost::property_tree::ptree root;
     boost::property_tree::read_json(filename.toLocalFile().toStdString(), root);
     std::string pathA(root.get<std::string>("fileData.pathA"));
@@ -26,10 +27,10 @@ void Controller::loadJsonMetadataFile(QUrl filename)
 
     boost::property_tree::ptree arenaData = root.get_child("arenaData");
     for (boost::property_tree::ptree::value_type& row : arenaData.get_child("cornerPixelsA"))
-        for (boost::property_tree::ptree::value_type & value : row.second)
+        for (boost::property_tree::ptree::value_type& value : row.second)
             cornersA.push_back(value.second.get_value<int>());
     for (boost::property_tree::ptree::value_type& row : arenaData.get_child("cornerPixelsB"))
-        for (boost::property_tree::ptree::value_type & value : row.second)
+        for (boost::property_tree::ptree::value_type& value : row.second)
             cornersB.push_back(value.second.get_value<int>());
 
     camA->setRoiMaskVector(cornersA);
@@ -55,12 +56,11 @@ void Controller::loadJsonMetadataFile(QUrl filename)
     camA->setColorFilteringParameters(CFthreshL1Yellow, CFthreshL2Yellow, CFthreshL0BlueLight, CFthreshL2BlueLight, CFthreshL2BlueDark);
     camB->setColorFilteringParameters(CFthreshL1Yellow, CFthreshL2Yellow, CFthreshL0BlueLight, CFthreshL2BlueLight, CFthreshL2BlueDark);
 
-
-    //int BDthresh = root.get<int>("beeDetection.threshold");
-    //int BDlowerGaussian = root.get<int>("beeDetection.lowerGaussian");
-    //int BDupperGaussian = root.get<int>("beeDetection.upperGaussian");
-    //int BDminArea = root.get<int>("beeDetection.minArea");
-    //int BDmaxArea = root.get<int>("beeDetection.maxArea");
+    //    int BDthresh = root.get<int>("beeDetection.threshold");
+    //    int BDlowerGaussian = root.get<int>("beeDetection.lowerGaussian");
+    //    int BDupperGaussian = root.get<int>("beeDetection.upperGaussian");
+    //    int BDminArea = root.get<int>("beeDetection.minArea");
+    //    int BDmaxArea = root.get<int>("beeDetection.maxArea");
 }
 
 void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
@@ -74,14 +74,12 @@ void Controller::requestFrameUpdate(QString id, int threshold, bool stereo)
     camA->getFrame(frameIndex, mode.toStdString());
     camB->getFrame(frameIndex, mode.toStdString());
 
-    if (stereo)
-    {
+    if (stereo) {
         m_stereo->compute(mode.toStdString());
     }
 
     emit framesUpdated();
 }
-
 
 void Controller::setParameters(int window1, int window2, int minimumArea, int maximumArea)
 {
@@ -93,8 +91,7 @@ void Controller::initializeJsonFile(QUrl filename)
 {
     std::cout << "trying to open " << filename.toLocalFile().toStdString() << std::endl;
     m_jsonFile.open(filename.toLocalFile().toStdString(), std::ofstream::out);
-    if (!m_jsonFile.is_open())
-    {
+    if (!m_jsonFile.is_open()) {
         qDebug() << "Could not open json file in Controller";
     }
     m_jsonFile << "[\n";
@@ -108,12 +105,9 @@ void Controller::finalizeJsonFile()
 
 void Controller::appendKeypointsToFile()
 {
-    if (hasWrittenFrame)
-    {
+    if (hasWrittenFrame) {
         m_jsonFile << ",\n";
-    }
-    else
-    {
+    } else {
         hasWrittenFrame = true;
     }
     m_jsonFile << camA->getDumpString().toStdString();
@@ -121,7 +115,8 @@ void Controller::appendKeypointsToFile()
     m_jsonFile << camB->getDumpString().toStdString();
 }
 
-Controller::Controller(QObject *parent) : QObject(parent)
+Controller::Controller(QObject* parent)
+    : QObject(parent)
 {
     m_frameMax = 1;
     m_frameMin = 0;
@@ -130,43 +125,37 @@ Controller::Controller(QObject *parent) : QObject(parent)
     camA = std::make_shared<BeeTracker2d>("A");
     camB = std::make_shared<BeeTracker2d>("B");
     m_stereo = std::make_shared<StereoHandler>(camA, camB);
-
 }
 
 QPixmap Controller::handlePixmapRequest(QString cam, int frameIndex, QString mode)
 {
-    setFrameMax(std::min(camA->getMaxFrame()-camA->getFrameOffset(), camB->getMaxFrame()-camB->getFrameOffset()));
-    if (cam == QString("A"))
-    {
+    setFrameMax(std::min(camA->getMaxFrame() - camA->getFrameOffset(), camB->getMaxFrame() - camB->getFrameOffset()));
+    if (cam == QString("A")) {
         cv::Mat frame;
         camA->m_cpuFrame.copyTo(frame);
         //camA->m_cpuFrame.copyTo(frame);
-        if (m_pixmapA)
-        {
-            std::cout << "Deleting pixmap" << std::endl;
-            delete m_pixmapA;
-        }
-        QImage * tmpImage = new QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
-        m_pixmapA = new QPixmap(QPixmap::fromImage(*tmpImage));
-        delete tmpImage;
-        return *m_pixmapA;
-    }
-    else if (cam == QString("B"))
-    {
+        //if (m_pixmapA) {
+        //    std::cout << "Deleting pixmap" << std::endl;
+        //    delete m_pixmapA;
+        //}
+        //QImage* tmpImage = new QImage((unsigned char*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+        //m_pixmapA = new QPixmap(QPixmap::fromImage(*tmpImage));
+        //delete tmpImage;
+        //return *m_pixmapA;
+        return QPixmap::fromImage(QImage((unsigned char*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
+    } else if (cam == QString("B")) {
         cv::Mat frame;
-        //camB->m_cpuFrame.copyTo(frame);
-        return QPixmap::fromImage(QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
+        camB->m_cpuFrame.copyTo(frame);
+        return QPixmap::fromImage(QImage((unsigned char*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
     }
 
-    else if (cam == QString("Stereo"))
-    {
+    else if (cam == QString("Stereo")) {
         cv::Mat frame;
-        //m_stereo->m_frame.copyTo(frame);
-        return QPixmap::fromImage(QImage((unsigned char*) frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
+        m_stereo->m_frame.copyTo(frame);
+        return QPixmap::fromImage(QImage((unsigned char*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888));
     }
 
-    else
-    {
+    else {
         qDebug() << "Invalid camera for controller: " << cam;
     }
 }

@@ -1,40 +1,35 @@
 #include "stereohandler.h"
-#include <opencv2/core/cuda.hpp>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/core/cuda.hpp>
 //#include <opencv2/cudastereo.hpp>
-#include <iostream>
 #include <functions.h>
+#include <iostream>
 
 StereoHandler::StereoHandler(std::shared_ptr<BeeTracker2d> camA, std::shared_ptr<BeeTracker2d> camB)
-    : m_camA(camA), m_camB(camB)
+    : m_camA(camA)
+    , m_camB(camB)
 {
 }
 
 cv::Mat StereoHandler::compute(std::string mode)
 {
-    if (mode == "Bounding boxes")
-    {
+    if (mode == "Bounding boxes") {
         std::cout << "Bounding box handling in stereo handler" << std::endl;
         std::vector<cv::Point2f> pointsA;
         std::vector<cv::Point2f> pointsB;
         std::vector<cv::Point2f> homographyPointsA;
         std::vector<cv::Point2f> homographyPointsB;
 
-
-
-        for (cv::RotatedRect rect :  m_camA->m_flowerRects)
-        {
+        for (cv::RotatedRect rect : m_camA->m_flowerRects) {
             homographyPointsA.push_back(rect.center);
         }
 
-        for (cv::RotatedRect rect :  m_camB->m_flowerRects)
-        {
+        for (cv::RotatedRect rect : m_camB->m_flowerRects) {
             homographyPointsB.push_back(rect.center);
         }
 
         std::cout << "Length of rectA: " << homographyPointsA.size();
         std::cout << "Length of rectB: " << homographyPointsB.size();
-
 
         // bonus points
         pointsA.push_back(cv::Point2f(980.000000, 1176.000000));
@@ -78,8 +73,7 @@ cv::Mat StereoHandler::compute(std::string mode)
         pointsB.push_back(cv::Point2f(59.000000, 1380.000000));
         pointsB.push_back(cv::Point2f(1478.000000, 1384.000000));
 
-
-        int len = (homographyPointsA.size()<homographyPointsB.size() ? homographyPointsA.size() : homographyPointsB.size());
+        int len = (homographyPointsA.size() < homographyPointsB.size() ? homographyPointsA.size() : homographyPointsB.size());
         homographyPointsA.resize(len);
         homographyPointsB.resize(len);
 
@@ -94,31 +88,26 @@ cv::Mat StereoHandler::compute(std::string mode)
         cv::computeCorrespondEpilines(cv::Mat(pointsB), 2, fundamentalMatrix, lines2);
 
         int counter = 0;
-        for (std::vector<cv::Vec3f>::const_iterator it = lines2.begin(); it!=lines2.end(); ++it)
-           {
+        for (std::vector<cv::Vec3f>::const_iterator it = lines2.begin(); it != lines2.end(); ++it) {
             // Draw the line between first and last column
             cv::line(m_camA->m_cpuFrame,
-                  cv::Point(0,-(*it)[2]/(*it)[1]),
-                  cv::Point(m_camA->m_cpuFrame.cols,-((*it)[2]+
-                                               (*it)[0]*m_camA->m_cpuFrame.cols)/(*it)[1]),
-                  cv::Scalar(255,255,255));
+                cv::Point(0, -(*it)[2] / (*it)[1]),
+                cv::Point(m_camA->m_cpuFrame.cols, -((*it)[2] + (*it)[0] * m_camA->m_cpuFrame.cols) / (*it)[1]),
+                cv::Scalar(255, 255, 255));
             cv::circle(m_camA->m_cpuFrame, pointsA[counter], 5, cv::Scalar(255, 0, 0));
-            counter ++;
-            }
+            counter++;
+        }
 
         counter = 0;
-        for (std::vector<cv::Vec3f>::const_iterator it = lines1.begin(); it!=lines1.end(); ++it)
-           {
+        for (std::vector<cv::Vec3f>::const_iterator it = lines1.begin(); it != lines1.end(); ++it) {
 
-               cv::line(m_camB->m_cpuFrame,
-                     cv::Point(0,-(*it)[2]/(*it)[1]),
-                     cv::Point(m_camB->m_cpuFrame.cols,-((*it)[2]+
-                                                  (*it)[0]*m_camB->m_cpuFrame.cols)/(*it)[1]),
-                     cv::Scalar(255,255,255));
-               cv::circle(m_camB->m_cpuFrame, pointsB[counter], 5, cv::Scalar(255, 0, 0));
-               counter ++;
-
-           }
+            cv::line(m_camB->m_cpuFrame,
+                cv::Point(0, -(*it)[2] / (*it)[1]),
+                cv::Point(m_camB->m_cpuFrame.cols, -((*it)[2] + (*it)[0] * m_camB->m_cpuFrame.cols) / (*it)[1]),
+                cv::Scalar(255, 255, 255));
+            cv::circle(m_camB->m_cpuFrame, pointsB[counter], 5, cv::Scalar(255, 0, 0));
+            counter++;
+        }
         pointsA.clear();
         pointsB.clear();
 
@@ -127,7 +116,6 @@ cv::Mat StereoHandler::compute(std::string mode)
         m_camA->drawFlowerBoxes();
         m_camB->drawFlowerBoxes();
         //cv::warpPerspective(m_camA->m_cpuFrame, m_camA->m_cpuFrame, homography, m_camA->m_cpuFrame.size());
-
     }
 
     cv::Mat outputCpu;
@@ -136,5 +124,3 @@ cv::Mat StereoHandler::compute(std::string mode)
     m_frame = outputCpu;
     return outputCpu;
 }
-
-

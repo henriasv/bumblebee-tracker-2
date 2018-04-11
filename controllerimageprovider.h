@@ -2,24 +2,22 @@
 #define CONTROLLERIMAGEPROVIDER_H
 
 #include <QQuickImageProvider>
+#include <opencv/highgui.h>
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
-#include <opencv/highgui.h>
 
 class Controller;
-class ControllerImageProvider : public QQuickImageProvider
-{
+class ControllerImageProvider : public QQuickImageProvider {
 
 public:
     ControllerImageProvider();
-    QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize) override;
+    QPixmap requestPixmap(const QString& id, QSize* size, const QSize& requestedSize) override;
     void setVideoSource(QString source);
-    void setController(Controller* controller) {m_controller = controller;}
+    void setController(Controller* controller) { m_controller = controller; }
 
 private:
     cv::VideoCapture m_videoCapture;
-    Controller * m_controller;
-
+    Controller* m_controller;
 };
 
 #endif // CONTROLLERIMAGEPROVIDER_H

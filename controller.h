@@ -1,22 +1,20 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <QObject>
 #include <QDebug>
-#include <memory>
-#include <controllerimageprovider.h>
-#include <beetracker2d.h>
-#include <stereohandler.h>
-#include <fstream>
+#include <QObject>
 #include <QUrl>
+#include <beetracker2d.h>
+#include <controllerimageprovider.h>
+#include <fstream>
+#include <memory>
+#include <stereohandler.h>
 
-class Controller : public QObject
-{
+class Controller : public QObject {
     Q_OBJECT
     Q_PROPERTY(int frameMin READ frameMin WRITE setFrameMin NOTIFY frameMinChanged)
     Q_PROPERTY(int frameMax READ frameMax WRITE setFrameMax NOTIFY frameMaxChanged)
     Q_PROPERTY(int threshold READ threshold WRITE setThreshold NOTIFY thresholdChanged)
-
 
     int m_frameMax;
     int m_frameMin;
@@ -31,7 +29,7 @@ public:
     Q_INVOKABLE void finalizeJsonFile();
     Q_INVOKABLE void appendKeypointsToFile();
 
-    explicit Controller(QObject *parent = 0);
+    explicit Controller(QObject* parent = 0);
     ControllerImageProvider* m_imageProvider;
 
     std::shared_ptr<BeeTracker2d> camA;
@@ -48,6 +46,7 @@ public:
     int frameMin() const;
 
     int threshold() const;
+
 private:
     std::ofstream m_jsonFile;
     bool hasWrittenFrame = false;

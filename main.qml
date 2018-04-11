@@ -7,9 +7,9 @@ import TrackingController 1.0
 ApplicationWindow {
     id : root
     visible: true
-    width: 640
+    width: 1024
     minimumWidth: mainToolBar.implicitWidth
-    height: 480
+    height: 600
     title: qsTr("Bumblebee")
 
     Component.onCompleted: {
@@ -58,7 +58,10 @@ ApplicationWindow {
         nameFilters: ["JSON files (*.json)"]
         visible : false
         selectExisting : true
-        onAccepted: console.log("You chose: " + loadFileDialog.fileUrls), controller.loadJsonMetadataFile(loadFileDialog.fileUrl)
+        onAccepted: {
+            console.log("You chose: " + loadFileDialog.fileUrls)
+            controller.loadJsonMetadataFile(loadFileDialog.fileUrl)
+        }
     }
 
     FileDialog {
@@ -66,7 +69,10 @@ ApplicationWindow {
         title: "Select output file"
         visible: false
         selectExisting: false
-        onAccepted: console.log("You chose: " + saveFileDialog.fileUrls), msg.open()
+        onAccepted: {
+            console.log("You chose: " + saveFileDialog.fileUrls)
+            msg.open()
+        }
     }
 
     function saveTrajectories(url) {
@@ -85,7 +91,10 @@ ApplicationWindow {
             id: msg
             title: "Title"
             standardButtons: StandardButton.Save | StandardButton.Cancel
-            onAccepted: saveTrajectories(saveFileDialog.fileUrl), visible=false
+            onAccepted: {
+                saveTrajectories(saveFileDialog.fileUrl)
+                visible=false
+            }
             ColumnLayout {
                 TextField {
                     id : saveTrajectoriesFirst
@@ -134,7 +143,10 @@ ApplicationWindow {
                 to : 10000
                 stepSize: 1
                 snapMode: "SnapAlways"
-                onValueChanged: frameLabel.text=parseInt(this.value), frameUpdate()
+                onValueChanged: {
+                    frameLabel.text=parseInt(this.value)
+                    frameUpdate()
+                }
             }
             Label {
                 id : frameLabel

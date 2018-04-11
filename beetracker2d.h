@@ -1,9 +1,9 @@
 #ifndef BEETRACKER2D_H
 #define BEETRACKER2D_H
 
-#include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 //#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d.hpp>
 //#include <opencv2/cudafeatures2d.hpp>
@@ -11,15 +11,15 @@
 //#include <opencv2/cudaimgproc.hpp>
 //#include <opencv2/cudaarithm.hpp>
 //#include <opencv2/cudafilters.hpp>
-#include <QString>
-#include <QFile>
-#include <QTextStream>
 #include <QDebug>
+#include <QFile>
+#include <QString>
+#include <QTextStream>
 
 class StereoHandler;
-class BeeTracker2d
-{
+class BeeTracker2d {
     friend class StereoHandler;
+
 public:
     BeeTracker2d(QString camName);
     cv::VideoCapture m_cam;
@@ -71,12 +71,12 @@ private:
 
     cv::Mat m_elementErode;
 
-    std::vector<cv::KeyPoint>       keypoints;
-    std::vector<cv::RotatedRect>    m_flowerRects;
-    std::vector<int>                m_flowerColors;
-    std::vector<cv::Point2f>        m_arenaCorners;
-    std::vector<int>                m_beesOnFlower;
-    std::vector<int>                m_roiMaskVector;
+    std::vector<cv::KeyPoint> keypoints;
+    std::vector<cv::RotatedRect> m_flowerRects;
+    std::vector<int> m_flowerColors;
+    std::vector<cv::Point2f> m_arenaCorners;
+    std::vector<int> m_beesOnFlower;
+    std::vector<int> m_roiMaskVector;
 
     bool m_flipFlag;
     int m_threshold = 125;
@@ -99,7 +99,6 @@ private:
     int m_CFthreshL0BlueLight = 140;
     int m_CFthreshL2BlueLight = 124;
     int m_CFthreshL2BlueDark = 121;
-
 };
 
 #endif // BEETRACKER2D_H

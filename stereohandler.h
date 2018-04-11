@@ -5,8 +5,7 @@
 //#include <opencv2/cudafeatures2d.hpp>
 #include <memory>
 
-class StereoHandler
-{
+class StereoHandler {
 public:
     StereoHandler(std::shared_ptr<BeeTracker2d> camA, std::shared_ptr<BeeTracker2d> camB);
 
